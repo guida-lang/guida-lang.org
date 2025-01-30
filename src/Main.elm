@@ -4,10 +4,17 @@ import Browser
 import Html
 
 
-main : Program () {} ()
+main : Program () () ()
 main =
-    Browser.sandbox
-        { init = {}
-        , update = \_ _ -> {}
-        , view = \_ -> Html.h1 [] [ Html.text "Hello Guida!" ]
+    Browser.document
+        { init = \_ -> ( (), Cmd.none )
+        , view =
+            \_ ->
+                { title = "Guida"
+                , body =
+                    [ Html.h1 [] [ Html.text "Hello Guida!" ]
+                    ]
+                }
+        , update = \_ _ -> ( (), Cmd.none )
+        , subscriptions = \_ -> Sub.none
         }
