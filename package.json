@@ -1,0 +1,10 @@
+{
+  "name": "guida-lang.org",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "elm make src/Main.elm"
+  },
+  "dependencies": {
+    "elm": "^0.19.1-6"
+  }
+}
