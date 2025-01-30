@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      name: Build static files
+      - name: Build static files
         id: build
         uses: actions/checkout@v4
         uses: actions/setup-node@v4
