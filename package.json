@@ -2,6 +2,7 @@
   "name": "guida-lang.org",
   "version": "1.0.0",
   "scripts": {
+    "prebuild": "cp public/index.html public/404.html",
     "build": "elm make src/Main.elm --output=public/main.js"
   },
   "dependencies": {
