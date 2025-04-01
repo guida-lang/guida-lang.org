@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "prebuild": "cp public/index.html public/404.html",
-    "build": "elm make src/Main.elm --output=public/main.js",
+    "build": "elm make src/Main.elm --debug --output=tmp/elm.js && esbuild lib/index.js --bundle --outfile=public/main.js",
     "postbuild": "tailwindcss -i ./styles/tailwind.css -o ./public/main.css",
     "server": "http-server --proxy http://localhost:8080?",
     "elm-format": "elm-format . --yes"
@@ -11,8 +11,11 @@
   "dependencies": {
     "@tailwindcss/cli": "^4.0.7",
     "@tailwindcss/typography": "^0.5.16",
+    "@vanillawc/wc-codemirror": "^2.1.0",
     "elm": "^0.19.1-6",
     "elm-format": "^0.8.7",
+    "esbuild": "0.25.2",
+    "guida": "file:../compiler",
     "http-server": "^14.1.1",
     "tailwindcss": "^4.0.7"
   }
