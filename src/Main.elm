@@ -2,14 +2,12 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html)
-import Html.Attributes as Attr
-import Html.Events as Events
-import Icon
-import Layout.Footer
-import Layout.Header
-import Svg
-import Svg.Attributes as SvgAttr
+import Html
+import Page.Home as Home
+import Page.NotFound as NotFound
+import Page.Try as Try
+import Route exposing (Route)
+import Session exposing (Session)
 import Url exposing (Url)
 
 
@@ -18,135 +16,62 @@ import Url exposing (Url)
 
 
 type alias Model =
-    { key : Nav.Key
-    , year : Int
-    , showNavigation : Bool
+    { session : Session
+    , currentPage : CurrentPage
     }
 
 
-type Theme
-    = Light
-    | Dark
+type CurrentPage
+    = NotFound
+    | Home Home.Model
+    | Try Try.Model
 
 
 init : Int -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init year url navKey =
-    ( { key = navKey
-      , year = year
-      , showNavigation = False
-      }
-    , Cmd.none
-    )
-
-
-
--- VIEW
-
-
-view : Model -> Browser.Document Msg
-view model =
-    { title = "Guida"
-    , body =
-        [ Layout.Header.view ToggleNavigation model.showNavigation
-        , Html.main_
-            [ Attr.class "relative isolate px-6 pt-14 lg:px-8"
-            ]
-            [ Html.div
-                [ Attr.class "absolute inset-x-0 -top-10 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-20"
-                , Attr.attribute "aria-hidden" "true"
-                ]
-                [ Html.div
-                    [ Attr.class "relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] bg-gradient-to-tr from-[#f54a00] to-[#fcc800] opacity-30 sm:-left-5 sm:w-[72.1875rem]"
-                    , Attr.style "clip-path" "polygon(25% 0%,70% 0%,40% 35%,95% 35%,20% 100%,40% 55%,0% 55%)"
-                    ]
-                    []
-                ]
-            , Html.div
-                [ Attr.class "mx-auto max-w-4xl py-32 sm:py-48 lg:py-56"
-                ]
-                [ Html.div
-                    [ Attr.class "hidden sm:mb-8 sm:flex sm:justify-center"
-                    ]
-                    [ Html.div
-                        [ Attr.class "relative rounded-full px-3 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20"
-                        ]
-                        [ Html.text "Install Guida locally via npm "
-                        , Html.a
-                            [ Attr.href "/docs/install"
-                            , Attr.class "font-semibold text-amber-600"
-                            ]
-                            [ Html.span
-                                [ Attr.class "absolute inset-0"
-                                , Attr.attribute "aria-hidden" "true"
-                                ]
-                                []
-                            , Html.text "Read more "
-                            , Html.span
-                                [ Attr.attribute "aria-hidden" "true"
-                                ]
-                                [ Html.text "→" ]
-                            ]
-                        ]
-                    ]
-                , Html.div
-                    [ Attr.class "text-center"
-                    ]
-                    [ Html.h1
-                        [ Attr.class "text-balance text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl"
-                        ]
-                        [ Html.text "Guida: functional programming, evolved!" ]
-                    , Html.p
-                        [ Attr.class "mt-8 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8"
-                        ]
-                        [ Html.text "Guida is a functional programming language that builds upon the solid foundation of Elm, offering backward compatibility with all existing Elm 0.19.1 projects." ]
-                    , Html.div
-                        [ Attr.class "mt-10 flex items-center justify-center gap-x-6"
-                        ]
-                        [ Html.a
-                            [ Attr.href "/try"
-                            , Attr.class "rounded-md bg-amber-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-                            ]
-                            [ Html.text "Try Guida" ]
-                        , Html.a
-                            [ Attr.href "/docs"
-                            , Attr.class "text-sm/6 font-semibold text-gray-900"
-                            ]
-                            [ Html.text "Documentation "
-                            , Html.span
-                                [ Attr.attribute "aria-hidden" "true"
-                                ]
-                                [ Html.text "→" ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        , Layout.Footer.view model.year
-        ]
-    }
+    changeRouteTo (Route.fromUrl url)
+        { session = Session.init year navKey
+        , currentPage = NotFound
+        }
 
 
 
 -- UPDATE
 
 
+changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo maybeRoute model =
+    case maybeRoute of
+        Nothing ->
+            ( { model | currentPage = NotFound }, Cmd.none )
+
+        Just Route.Home ->
+            Home.init
+                |> updateWith Home HomeMsg model
+
+        Just Route.Try ->
+            Try.init
+                |> updateWith Try TryMsg model
+
+
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | ToggleNavigation
+    | HomeMsg Home.Msg
+    | TryMsg Try.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        ChangedUrl _ ->
-            ( model, Cmd.none )
+    case ( msg, model.currentPage ) of
+        ( ChangedUrl url, _ ) ->
+            changeRouteTo (Route.fromUrl url) model
 
-        ClickedLink urlRequest ->
+        ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
                     ( model
-                    , Nav.pushUrl model.key (Url.toString url)
+                    , Nav.pushUrl (Session.navKey model.session) (Url.toString url)
                     )
 
                 Browser.External url ->
@@ -154,10 +79,21 @@ update msg model =
                     , Nav.load url
                     )
 
-        ToggleNavigation ->
-            ( { model | showNavigation = not model.showNavigation }
-            , Cmd.none
-            )
+        ( HomeMsg subMsg, Home subModel ) ->
+            Home.update subMsg subModel
+                |> updateWith Home HomeMsg model
+
+        ( TryMsg subMsg, Try subModel ) ->
+            Try.update subMsg subModel
+                |> updateWith Try TryMsg model
+
+        _ ->
+            ( model, Cmd.none )
+
+
+updateWith : (subModel -> CurrentPage) -> (subMsg -> Msg) -> Model -> ( subModel, Cmd subMsg ) -> ( Model, Cmd Msg )
+updateWith toCurrentPage toMsg model =
+    Tuple.mapBoth (\subModel -> { model | currentPage = toCurrentPage subModel }) (Cmd.map toMsg)
 
 
 
@@ -166,7 +102,37 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    case model.currentPage of
+        Try subModel ->
+            Try.subscriptions subModel
+                |> Sub.map TryMsg
+
+        _ ->
+            Sub.none
+
+
+
+-- VIEW
+
+
+view : Model -> Browser.Document Msg
+view model =
+    case model.currentPage of
+        NotFound ->
+            viewPage never NotFound.view
+
+        Home subModel ->
+            viewPage HomeMsg (Home.view model.session subModel)
+
+        Try subModel ->
+            viewPage TryMsg (Try.view subModel)
+
+
+viewPage : (msg -> Msg) -> Browser.Document msg -> Browser.Document Msg
+viewPage toMsg { title, body } =
+    { title = title
+    , body = List.map (Html.map toMsg) body
+    }
 
 
 
