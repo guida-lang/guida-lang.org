@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   theme: {
     typography: ({ theme }) => ({
       DEFAULT: {
@@ -349,4 +349,4 @@ export default {
       },
     }),
   },
-}
+};
