@@ -16,7 +16,7 @@
     "elm": "^0.19.1-6",
     "elm-format": "^0.8.7",
     "esbuild": "0.25.2",
-    "guida": "file:../compiler",
+    "guida": "github:guida-lang/compiler#browser",
     "http-server": "^14.1.1",
     "tailwindcss": "^4.0.7"
   },
