@@ -9,7 +9,6 @@ import Html.Attributes as Attr
 import Html.Events as Events
 import Icon
 import Svg.Attributes as SvgAttr
-import Url.Builder exposing (Root(..))
 
 
 type Mode msg

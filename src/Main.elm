@@ -1,4 +1,10 @@
-module Main exposing (main)
+module Main exposing
+    ( CurrentPage
+    , Flags
+    , Model
+    , Msg
+    , main
+    )
 
 import Browser
 import Browser.Navigation as Nav

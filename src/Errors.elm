@@ -52,9 +52,11 @@ viewErrorHelp error =
 viewHeader : String -> Maybe String -> Html msg
 viewHeader title maybeFilePath =
     let
+        left : String
         left =
             "-- " ++ title ++ " "
 
+        right : String
         right =
             case maybeFilePath of
                 Nothing ->
@@ -123,6 +125,7 @@ viewMessage chunks =
 
         chunk :: others ->
             let
+                htmlChunk : Html msg
                 htmlChunk =
                     case chunk of
                         Error.Unstyled string ->

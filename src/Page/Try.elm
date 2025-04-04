@@ -1,4 +1,11 @@
-port module Page.Try exposing (..)
+port module Page.Try exposing
+    ( Model
+    , Msg
+    , init
+    , subscriptions
+    , update
+    , view
+    )
 
 import Browser
 import Elm.Error
@@ -61,11 +68,7 @@ update msg model =
                 Ok result ->
                     ( { model | rebuilding = False, maybeResult = Just result }, Cmd.none )
 
-                Err err ->
-                    let
-                        _ =
-                            Debug.log "error" (Decode.errorToString err)
-                    in
+                Err _ ->
                     ( { model | rebuilding = False, maybeResult = Nothing }, Cmd.none )
 
 
