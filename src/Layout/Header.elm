@@ -1,5 +1,6 @@
 module Layout.Header exposing
-    ( Item(..)
+    ( Enabled(..)
+    , Item(..)
     , Mode(..)
     , view
     )
@@ -13,12 +14,17 @@ import Svg.Attributes as SvgAttr
 
 type Mode msg
     = Navigation (List (Item msg))
-    | Custom (List (Item msg)) (List (Html msg))
+    | Custom (Maybe (Item msg)) (List (Item msg)) (List (Html msg))
 
 
 type Item msg
-    = Button { label : List (Html msg), msg : msg }
+    = Button { label : List (Html msg), msg : Enabled msg }
     | Link { label : List (Html msg), href : String }
+
+
+type Enabled msg
+    = Enabled msg
+    | Disabled
 
 
 view : Mode msg -> msg -> Bool -> Html msg
@@ -33,11 +39,12 @@ view mode toggleNavigation showNavigation =
                 ]
                 [ Html.a
                     [ Attr.href "/"
-                    , Attr.class "-m-1.5 p-1.5"
+                    , Attr.class "inline-flex items-center gap-x-1.5 font-mono text-2xl -m-1.5 p-1.5 text-amber-500 hover:text-amber-400"
                     ]
-                    [ Html.span [ Attr.class "sr-only" ]
-                        [ Html.text "Guida" ]
-                    , Icon.logo [ SvgAttr.class "h-8 w-auto" ]
+                    [ Icon.logo [ SvgAttr.class "h-8 w-auto" ]
+                    , Html.div [ Attr.class "" ]
+                        [ Html.text "guida"
+                        ]
                     ]
                 ]
             , Html.div
@@ -51,7 +58,8 @@ view mode toggleNavigation showNavigation =
                     [ Html.span
                         [ Attr.class "sr-only"
                         ]
-                        [ Html.text "Open main menu" ]
+                        [ Html.text "Open main menu"
+                        ]
                     , Icon.burger [ SvgAttr.class "size-6" ]
                     ]
                 ]
@@ -70,7 +78,10 @@ viewTopLevelMode mode =
         Navigation items ->
             List.map viewTopLevelItem items
 
-        Custom items _ ->
+        Custom (Just highlightedItem) items _ ->
+            List.map viewTopLevelItem (highlightedItem :: items)
+
+        Custom Nothing items _ ->
             List.map viewTopLevelItem items
 
 
@@ -78,15 +89,27 @@ viewTopLevelItem : Item msg -> Html msg
 viewTopLevelItem item =
     case item of
         Button button ->
+            let
+                eventAttrs : List (Html.Attribute msg)
+                eventAttrs =
+                    case button.msg of
+                        Enabled msg ->
+                            [ Events.onClick msg ]
+
+                        Disabled ->
+                            [ Attr.class "cursor-not-allowed"
+                            , Attr.disabled True
+                            ]
+            in
             Html.button
-                [ Attr.class "rounded-sm bg-amber-600 px-2 py-1 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-                , Events.onClick button.msg
-                ]
+                (Attr.class "inline-flex items-center gap-x-1.5 rounded-md bg-amber-600 px-2 py-1 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+                    :: eventAttrs
+                )
                 button.label
 
         Link link ->
             Html.a
-                [ Attr.class "text-sm/6 font-semibold text-gray-900"
+                [ Attr.class "flex gap-x-3 text-sm/6 font-semibold text-gray-900"
                 , Attr.href link.href
                 ]
                 link.label
@@ -95,6 +118,16 @@ viewTopLevelItem item =
 navigationMenu : Mode msg -> msg -> Bool -> List (Html msg)
 navigationMenu mode toggleNavigation showNavigation =
     if showNavigation then
+        let
+            highlightedItem : List (Html msg)
+            highlightedItem =
+                case mode of
+                    Custom (Just item) _ _ ->
+                        [ viewTopLevelItem item ]
+
+                    _ ->
+                        []
+        in
         [ Html.div
             [ Attr.class "relative z-50 lg:hidden"
             , Attr.attribute "aria-labelledby" "slide-over-title"
@@ -125,42 +158,34 @@ navigationMenu mode toggleNavigation showNavigation =
                                     [ Attr.class "px-6"
                                     ]
                                     [ Html.div
-                                        [ Attr.class "flex items-start justify-end"
-                                        ]
-                                        [ Html.div
-                                            [ Attr.class "flex h-7 items-center"
-                                            ]
-                                            [ Html.button
-                                                [ Attr.type_ "button"
-                                                , Attr.class "-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-                                                , Events.onClick toggleNavigation
-                                                ]
-                                                [ Html.span
-                                                    [ Attr.class "absolute -inset-2.5"
-                                                    ]
-                                                    []
-                                                , Html.span
-                                                    [ Attr.class "sr-only"
-                                                    ]
-                                                    [ Html.text "Close panel" ]
-                                                , Icon.cross [ SvgAttr.class "size-6" ]
-                                                ]
+                                        [ Attr.class "flex items-start"
+                                        , Attr.classList
+                                            [ ( "justify-between", not (List.isEmpty highlightedItem) )
+                                            , ( "justify-end", List.isEmpty highlightedItem )
                                             ]
                                         ]
+                                        (highlightedItem
+                                            ++ [ Html.div
+                                                    [ Attr.class "flex h-7 items-center"
+                                                    ]
+                                                    [ Html.button
+                                                        [ Attr.type_ "button"
+                                                        , Attr.class "-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+                                                        , Events.onClick toggleNavigation
+                                                        ]
+                                                        [ Html.span
+                                                            [ Attr.class "sr-only"
+                                                            ]
+                                                            [ Html.text "Close panel" ]
+                                                        , Icon.cross [ SvgAttr.class "size-6" ]
+                                                        ]
+                                                    ]
+                                               ]
+                                        )
                                     ]
                                 , Html.div
                                     [ Attr.class "relative mt-6 flex-1 px-6"
                                     ]
-                                    -- (List.map
-                                    --     (\link ->
-                                    --         Html.a
-                                    --             [ Attr.href link.href
-                                    --             , Attr.class "-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                                    --             ]
-                                    --             [ Html.text link.label ]
-                                    --     )
-                                    --     links
-                                    -- )
                                     (viewSidebarMode mode)
                                 ]
                             ]
@@ -180,7 +205,7 @@ viewSidebarMode mode =
         Navigation items ->
             List.map viewSidebarItem items
 
-        Custom _ content ->
+        Custom _ _ content ->
             content
 
 
@@ -188,10 +213,22 @@ viewSidebarItem : Item msg -> Html msg
 viewSidebarItem item =
     case item of
         Button button ->
+            let
+                eventAttrs : List (Html.Attribute msg)
+                eventAttrs =
+                    case button.msg of
+                        Enabled msg ->
+                            [ Events.onClick msg ]
+
+                        Disabled ->
+                            [ Attr.class "cursor-not-allowed"
+                            , Attr.disabled True
+                            ]
+            in
             Html.button
-                [ Attr.class "rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-                , Events.onClick button.msg
-                ]
+                (Attr.class "rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+                    :: eventAttrs
+                )
                 button.label
 
         Link link ->

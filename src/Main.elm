@@ -56,7 +56,11 @@ changeRouteTo maybeRoute model =
                 |> updateWith Home HomeMsg model
 
         Just Route.Try ->
-            Try.init
+            Try.init Nothing
+                |> updateWith Try TryMsg model
+
+        Just (Route.Example example) ->
+            Try.init (Just example)
                 |> updateWith Try TryMsg model
 
 

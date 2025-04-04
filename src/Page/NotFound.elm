@@ -23,7 +23,7 @@ view =
                     [ Html.text "Sorry, we couldn't find the page you're looking for." ]
                 , Html.div [ Attr.class "mt-10 flex items-center justify-center gap-x-6" ]
                     [ Html.a
-                        [ Attr.href "#"
+                        [ Attr.href "/"
                         , Attr.class "rounded-md bg-amber-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
                         ]
                         [ Html.text "Go back home" ]

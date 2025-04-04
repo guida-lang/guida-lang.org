@@ -15,22 +15,8 @@ import String
 
 viewError : Error.Error -> Html msg
 viewError error =
-    Html.div
-        [ Attr.style "width" "100%"
-        , Attr.style "min-height" "100%"
-        , Attr.style "display" "flex"
-        , Attr.style "flex-direction" "column"
-        , Attr.style "align-items" "center"
-        , Attr.style "background-color" "rgb(39, 40, 34)"
-        , Attr.style "color" "rgb(233, 235, 235)"
-        , Attr.style "font-family" "monospace"
-        ]
-        [ Html.div
-            [ Attr.style "display" "block"
-            , Attr.style "white-space" "pre-wrap"
-            , Attr.style "background-color" "black"
-            , Attr.style "padding" "2em"
-            ]
+    Html.div [ Attr.class "w-full min-h-full flex flex-col items-center text-black font-mono" ]
+        [ Html.div [ Attr.class "block whitespace-pre-wrap bg-white p-8" ]
             (viewErrorHelp error)
         ]
 
@@ -65,7 +51,7 @@ viewHeader title maybeFilePath =
                 Just filePath ->
                     " " ++ filePath
     in
-    Html.span [ Attr.style "color" "rgb(51,187,200)" ] [ Html.text (fill left right ++ "\n\n") ]
+    Html.span [ Attr.style "color" "#238fca" ] [ Html.text (fill left right ++ "\n\n") ]
 
 
 fill : String -> String -> String
@@ -201,7 +187,7 @@ colorToCss color =
             "rgb(51,187,200)"
 
         Error.CYAN ->
-            "rgb(20,240,240)"
+            "rgb(13,130,128)"
 
         Error.Blue ->
             "rgb(73,46,225)"

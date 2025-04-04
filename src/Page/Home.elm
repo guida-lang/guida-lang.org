@@ -119,7 +119,7 @@ headerMode : Layout.Header.Mode Msg
 headerMode =
     Layout.Header.Navigation
         [ Layout.Header.Link
-            { label = [ Html.text "Examples" ]
+            { label = [ Html.text "Try" ]
             , href = "/try"
             }
         , Layout.Header.Link
