@@ -6,6 +6,8 @@
     "build": "elm make src/Main.elm --output=tmp/elm.js && esbuild lib/index.js --bundle --outfile=public/main.js",
     "postbuild": "tailwindcss -i ./styles/tailwind.css -o ./public/main.css",
     "test": "npm-run-all --sequential test:*",
+    "test:eslint": "eslint",
+    "test:elm-format-validate": "elm-format . --validate",
     "test:elm-review": "elm-review",
     "elm-format": "elm-format . --yes",
     "start": "http-server --proxy http://localhost:8080?"
@@ -22,7 +24,10 @@
     "tailwindcss": "^4.0.7"
   },
   "devDependencies": {
+    "@eslint/js": "^9.23.0",
     "elm-review": "^2.13.2",
+    "eslint": "^9.23.0",
+    "globals": "^16.0.0",
     "npm-run-all": "^4.1.5"
   }
 }
