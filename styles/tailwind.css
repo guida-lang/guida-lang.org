@@ -58,3 +58,7 @@
     display: none;
   }
 }
+
+body {
+  @apply flex min-h-full bg-white antialiased dark:bg-zinc-900;
+}

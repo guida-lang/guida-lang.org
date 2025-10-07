@@ -17,8 +17,9 @@ import Http
 import Icon
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Layout.Header
+import Layout.Main as Layout
 import Route
+import Session exposing (Session)
 import Svg.Attributes as SvgAttr
 
 
@@ -66,7 +67,7 @@ init maybeExample =
     , case maybeExample of
         Just example ->
             Http.get
-                { url = "/examples/" ++ Route.exampleSrc example ++ ".guida"
+                { url = "/example-files/" ++ Route.exampleSrc example ++ ".guida"
                 , expect = Http.expectString GotExampleContent
                 }
 
@@ -138,8 +139,8 @@ subscriptions _ =
 -- VIEW
 
 
-view : Model -> Browser.Document Msg
-view model =
+view : Session -> (Session.Msg -> msg) -> (Msg -> msg) -> Model -> Browser.Document msg
+view session toSessionMsg toMsg model =
     { title =
         case model.example of
             Just Route.HelloWorld ->
@@ -151,26 +152,26 @@ view model =
             Nothing ->
                 "Try Guida!"
     , body =
-        [ Layout.Header.view (headerMode model) TogglePackages model.showPackages
-        , Html.section [ Attr.class "h-screen pt-20 grid grid-cols-none grid-rows-2 sm:grid-cols-2 sm:grid-rows-none" ]
-            [ Html.aside
-                [ Attr.class "overflow-y-auto border-b  sm:border-b-0 sm:border-r border-gray-200"
-                ]
-                [ Html.node "wc-codemirror"
-                    [ Attr.id "editor"
-                    , Attr.class "h-full"
-                    , Attr.attribute "mode" "javascript"
+        Layout.view { sidebarNavigation = [] } session toSessionMsg <|
+            [ Html.section [ Attr.class "h-screen pt-20 grid grid-cols-none grid-rows-2 sm:grid-cols-2 sm:grid-rows-none" ]
+                [ Html.aside
+                    [ Attr.class "overflow-y-auto border-b  sm:border-b-0 sm:border-r border-gray-200"
                     ]
-                    []
+                    [ Html.node "wc-codemirror"
+                        [ Attr.id "editor"
+                        , Attr.class "h-full"
+                        , Attr.attribute "mode" "javascript"
+                        ]
+                        []
+                    ]
+                , Html.main_ [ Attr.class "overflow-y-auto" ] (outputView toMsg model)
                 ]
-            , Html.main_ [ Attr.class "overflow-y-auto" ] (outputView model)
             ]
-        ]
     }
 
 
-outputView : Model -> List (Html Msg)
-outputView model =
+outputView : (Msg -> msg) -> Model -> List (Html msg)
+outputView toMsg model =
     case ( model.example, model.maybeResult ) of
         ( Nothing, Nothing ) ->
             [ Html.div [ Attr.class "flex h-full" ]
@@ -228,46 +229,42 @@ outputView model =
             ]
 
 
-headerMode : Model -> Layout.Header.Mode Msg
-headerMode model =
-    Layout.Header.Custom (Just (rebuildButton model)) [] []
 
-
-rebuildButton : Model -> Layout.Header.Item Msg
-rebuildButton model =
-    case model.status of
-        NotAsked ->
-            Layout.Header.Button
-                { label =
-                    [ Icon.arrowPath [ SvgAttr.class "-ml-0.5 size-5" ]
-                    , Html.text "Rebuild"
-                    ]
-                , msg = Layout.Header.Enabled Rebuild
-                }
-
-        Compiling ->
-            Layout.Header.Button
-                { label =
-                    [ Icon.arrowPath [ SvgAttr.class "-ml-0.5 size-5 animate-spin" ]
-                    , Html.text "Compiling..."
-                    ]
-                , msg = Layout.Header.Disabled
-                }
-
-        Success ->
-            Layout.Header.Button
-                { label =
-                    [ Icon.check [ SvgAttr.class "-ml-0.5 size-5" ]
-                    , Html.text "Success"
-                    ]
-                , msg = Layout.Header.Enabled Rebuild
-                }
-
-        ProblemsFound ->
-            Layout.Header.Button
-                { label =
-                    [ Icon.xMark [ SvgAttr.class "-ml-0.5 size-5" ]
-                    , Html.text "Problems found"
-                    ]
-                , msg = Layout.Header.Enabled Rebuild
-                }
+-- headerMode : Model -> Layout.Header.Mode Msg
+-- headerMode model =
+--     Layout.Header.Custom (Just (rebuildButton model)) [] []
+-- rebuildButton : Model -> Layout.Header.Item Msg
+-- rebuildButton model =
+--     case model.status of
+--         NotAsked ->
+--             Layout.Header.Button
+--                 { label =
+--                     [ Icon.arrowPath [ SvgAttr.class "-ml-0.5 size-5" ]
+--                     , Html.text "Rebuild"
+--                     ]
+--                 , msg = Layout.Header.Enabled Rebuild
+--                 }
+--         Compiling ->
+--             Layout.Header.Button
+--                 { label =
+--                     [ Icon.arrowPath [ SvgAttr.class "-ml-0.5 size-5 animate-spin" ]
+--                     , Html.text "Compiling..."
+--                     ]
+--                 , msg = Layout.Header.Disabled
+--                 }
+--         Success ->
+--             Layout.Header.Button
+--                 { label =
+--                     [ Icon.check [ SvgAttr.class "-ml-0.5 size-5" ]
+--                     , Html.text "Success"
+--                     ]
+--                 , msg = Layout.Header.Enabled Rebuild
+--                 }
+--         ProblemsFound ->
+--             Layout.Header.Button
+--                 { label =
+--                     [ Icon.xMark [ SvgAttr.class "-ml-0.5 size-5" ]
+--                     , Html.text "Problems found"
+--                     ]
+--                 , msg = Layout.Header.Enabled Rebuild
+--                 }

@@ -1,133 +1,210 @@
-module Page.Home exposing
-    ( Model
-    , Msg
-    , init
-    , update
-    , view
-    )
+module Page.Home exposing (view)
 
 import Browser
+import Components.Button as Button
+import Components.HeroPattern as HeroPattern
 import Html
 import Html.Attributes as Attr
-import Layout.Footer
-import Layout.Header
+import Layout.Main as Layout
 import Session exposing (Session)
-
-
-
--- MODEL
-
-
-type alias Model =
-    { showNavigation : Bool
-    }
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( { showNavigation = False
-      }
-    , Cmd.none
-    )
-
-
-
--- UPDATE
-
-
-type Msg
-    = ToggleNavigation
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ToggleNavigation ->
-            ( { model | showNavigation = not model.showNavigation }
-            , Cmd.none
-            )
 
 
 
 -- VIEW
 
 
-view : Session -> Model -> Browser.Document Msg
-view session model =
-    { title = "Guida"
+view : Session -> (Session.Msg -> msg) -> Browser.Document msg
+view session toSessionMsg =
+    { title = "Guida: Home"
     , body =
-        [ Layout.Header.view headerMode ToggleNavigation model.showNavigation
-        , Html.main_ [ Attr.class "relative isolate px-6 pt-14 lg:px-8" ]
-            [ Html.div
-                [ Attr.class "absolute inset-x-0 -top-10 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-20"
-                , Attr.attribute "aria-hidden" "true"
+        Layout.view { sidebarNavigation = [] } session toSessionMsg <|
+            [ HeroPattern.view
+            , Html.h1 [] [ Html.text "What is Guida?" ]
+            , Html.p [ Attr.class "lead" ]
+                [ Html.text "Guida is a functional programming language that builds upon the solid foundation of "
+                , Html.a [ Attr.href "https://elm-lang.org" ] [ Html.text "Elm" ]
+                , Html.text ", offering backward compatibility with all existing "
+                , Html.a [ Attr.href "https://github.com/elm/compiler/releases/tag/0.19.1" ] [ Html.text "Elm 0.19.1" ]
+                , Html.text " projects."
                 ]
-                [ Html.div
-                    [ Attr.class "relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] bg-gradient-to-tr from-[#f54a00] to-[#fcc800] opacity-30 sm:-left-5 sm:w-[72.1875rem]"
-                    , Attr.style "clip-path" "polygon(25% 0%,70% 0%,40% 35%,95% 35%,20% 100%,40% 55%,0% 55%)"
-                    ]
-                    []
+            , Html.div [ Attr.class "not-prose mt-6 mb-16 flex gap-3" ]
+                [ Button.view (Button.Link "/try") Button.Primary Nothing [] <|
+                    [ Html.text "Try" ]
+                , Button.view (Button.Link "/docs") Button.Outline (Just Button.RightArrow) [] <|
+                    [ Html.text "Documentation" ]
                 ]
-            , Html.div [ Attr.class "mx-auto max-w-4xl py-32 sm:py-48 lg:py-56" ]
-                [ Html.div [ Attr.class "hidden sm:mb-8 sm:flex sm:justify-center" ]
-                    [ Html.div [ Attr.class "relative rounded-full px-3 py-1 text-sm/6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20" ]
-                        [ Html.text "Install Guida locally via npm "
-                        , Html.a
-                            [ Attr.href "/docs/install"
-                            , Attr.class "font-semibold text-amber-600"
-                            ]
-                            [ Html.span
-                                [ Attr.class "absolute inset-0"
-                                , Attr.attribute "aria-hidden" "true"
-                                ]
-                                []
-                            , Html.text "Read more "
-                            , Html.span [ Attr.attribute "aria-hidden" "true" ]
-                                [ Html.text "→" ]
-                            ]
-                        ]
+            , Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "Vision" ]
+            , Html.p []
+                [ Html.text "Guida builds on the foundations of Elm, aiming to advance the future of functional programming. By translating Elm's compiler from Haskell to a self-hosted environment, Guida helps developers to build reliable, maintainable, and performant applications without leaving the language they love."
+                ]
+            , Html.p []
+                [ Html.strong [] [ Html.text "Continuity and Confidence (Version 0.x):" ]
+                , Html.text " Guida starts by ensuring full backward compatibility with Elm v0.19.1, allowing developers to migrate effortlessly and explore Guida with complete confidence."
+                ]
+            , Html.p []
+                [ Html.text "This commitment to continuity means that this version will faithfully replicate not only the features and behaviors of Elm v0.19.1, but also any existing bugs and quirks. By doing so, we provide a stable and predictable environment for developers, ensuring that their existing Elm projects work exactly as expected when migrated to Guida."
+                ]
+            , Html.p []
+                [ Html.strong [] [ Html.text "Evolution and Innovation (Version 1.x and Beyond):" ]
+                , Html.text " As Guida evolves, we will introduce new features and improvements. This phase will foster a unified ecosystem that adapts to the needs of its users."
+                ]
+            , Html.p [] [ Html.strong [] [ Html.text "Core Principles:" ] ]
+            , Html.ul []
+                [ Html.li []
+                    [ Html.strong [] [ Html.text "Backward Compatibility:" ]
+                    , Html.text " Respect for existing Elm projects, ensuring a frictionless migration."
                     ]
-                , Html.div [ Attr.class "text-center" ]
-                    [ Html.h1 [ Attr.class "text-balance text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl" ]
-                        [ Html.text "Guida: functional programming, evolved!" ]
-                    , Html.p [ Attr.class "mt-8 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8" ]
-                        [ Html.text "Guida is a functional programming language that builds upon the solid foundation of Elm, offering backward compatibility with all existing Elm 0.19.1 projects." ]
-                    , Html.div [ Attr.class "mt-10 flex items-center justify-center gap-x-6" ]
-                        [ Html.a
-                            [ Attr.href "/try"
-                            , Attr.class "rounded-md bg-amber-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-amber-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-                            ]
-                            [ Html.text "Try Guida" ]
-                        , Html.a
-                            [ Attr.href "/docs"
-                            , Attr.class "text-sm/6 font-semibold text-gray-900"
-                            ]
-                            [ Html.text "Documentation "
-                            , Html.span [ Attr.attribute "aria-hidden" "true" ]
-                                [ Html.text "→" ]
-                            ]
-                        ]
+                , Html.li []
+                    [ Html.strong [] [ Html.text "Accessibility:" ]
+                    , Html.text " Lowering barriers for developers by implementing Guida's core in its own syntax."
                     ]
                 ]
+            , Html.p []
+                [ Html.text "Our ultimate goal is to create a language that inherits the best aspects of Elm while adapting and growing to meet the needs of its users."
+                ]
+
+            -- Html.main_ [ Aria.role "main" ]
+            --     [ Html.section []
+            --         [ Html.h2 [] [ Html.text "What is Guida?" ]
+            --         , Html.p []
+            --             [ Html.text "Guida is a functional programming language that builds upon the solid foundation of "
+            --             , Html.a [ Attr.href "https://elm-lang.org" ] [ Html.text "Elm" ]
+            --             , Html.text ", offering backward compatibility with all existing "
+            --             , Html.a [ Attr.href "https://github.com/elm/compiler/releases/tag/0.19.1" ] [ Html.text "Elm 0.19.1" ]
+            --             , Html.text " projects."
+            --             ]
+            --         , Html.h3 [] [ Html.text "Vision" ]
+            --         , Html.p []
+            --             [ Html.text "Guida builds on the foundations of Elm, aiming to advance the future of functional programming. By translating Elm's compiler from Haskell to a self-hosted environment, Guida helps developers to build reliable, maintainable, and performant applications without leaving the language they love."
+            --             ]
+            --         , Html.p []
+            --             [ Html.strong [] [ Html.text "Continuity and Confidence (Version 0.x):" ]
+            --             , Html.text " Guida starts by ensuring full backward compatibility with Elm v0.19.1, allowing developers to migrate effortlessly and explore Guida with complete confidence."
+            --             ]
+            --         , Html.p []
+            --             [ Html.text "This commitment to continuity means that this version will faithfully replicate not only the features and behaviors of Elm v0.19.1, but also any existing bugs and quirks. By doing so, we provide a stable and predictable environment for developers, ensuring that their existing Elm projects work exactly as expected when migrated to Guida."
+            --             ]
+            --         , Html.p []
+            --             [ Html.strong [] [ Html.text "Evolution and Innovation (Version 1.x and Beyond):" ]
+            --             , Html.text " As Guida evolves, we will introduce new features and improvements. This phase will foster a unified ecosystem that adapts to the needs of its users."
+            --             ]
+            --         , Html.p [] [ Html.strong [] [ Html.text "Core Principles:" ] ]
+            --         , Html.ul []
+            --             [ Html.li []
+            --                 [ Html.strong [] [ Html.text "Backward Compatibility:" ]
+            --                 , Html.text " Respect for existing Elm projects, ensuring a frictionless migration."
+            --                 ]
+            --             , Html.li []
+            --                 [ Html.strong [] [ Html.text "Accessibility:" ]
+            --                 , Html.text " Lowering barriers for developers by implementing Guida's core in its own syntax."
+            --                 ]
+            --             ]
+            --         , Html.p []
+            --             [ Html.text "Our ultimate goal is to create a language that inherits the best aspects of Elm while adapting and growing to meet the needs of its users."
+            --             ]
+            --         ]
+            --     , Html.section []
+            --         [ Html.h2 [] [ Html.text "Try It" ]
+            --         , Html.p []
+            --             [ Html.text "Experiment with Guida in your browser. Write, run, and explore code instantly with the online Guida playground."
+            --             ]
+            --         , Html.p []
+            --             [ Html.text "This is the easiest way to experiment with Guida in your browser. "
+            --             , Html.a [ Attr.href "/try" ] [ Html.text "Try it" ]
+            --             , Html.text ", no installation required."
+            --             ]
+            --         ]
+            --     , Html.section []
+            --         [ Html.h2 [] [ Html.text "Documentation" ]
+            --         , Html.p []
+            --             [ Html.text "The "
+            --             , Html.a [ Attr.href "/docs" ] [ Html.text "documentation" ]
+            --             , Html.text " is the best place to start learning about Guida. It will give you a solid foundation for creating applications. Once you have worked through that, the next place to look for documentation is on the "
+            --             , Html.a [ Attr.href "https://package.guida-lang.org" ] [ Html.text "packages" ]
+            --             , Html.text " you are using."
+            --             ]
+            --         ]
+            --     , Html.section []
+            --         [ Html.h2 [] [ Html.text "Community" ]
+            --         , Html.p []
+            --             [ Html.text "Join us to shape the language together. See our "
+            --             , Html.a [ Attr.href "/community" ] [ Html.text "Community" ]
+            --             , Html.text " page for more details on how to get involved. Here is a list of some of the main resources:"
+            --             , Html.ul []
+            --                 [ Html.li []
+            --                     [ Html.a [ Attr.href "https://github.com/guida-lang" ]
+            --                         [ Html.text "Guida source code"
+            --                         ]
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.a [ Attr.href "https://github.com/orgs/guida-lang/discussions" ]
+            --                         [ Html.text "Collaborative communication forum"
+            --                         ]
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.a [ Attr.href "https://github.com/guida-lang/compiler/blob/main/CONTRIBUTING.md" ]
+            --                         [ Html.text "Contributing Guide"
+            --                         ]
+            --                     ]
+            --                 ]
+            --             , Html.h3 [] [ Html.text "Contribute" ]
+            --             , Html.p [] [ Html.text "Guida is open source and thrives with your help: report bugs, improve the compiler and tools, and share your projects." ]
+            --             , Html.ul []
+            --                 [ Html.li []
+            --                     [ Html.a [ Attr.href "https://github.com/guida-lang/compiler/issues" ] [ Html.text "File a bug or feature request" ]
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.text "Help triage existing issues"
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.text "Submit improvements to the "
+            --                     , Html.a [ Attr.href "https://github.com/guida-lang/compiler" ] [ Html.text "compiler" ]
+            --                     , Html.text ", "
+            --                     , Html.a [ Attr.href "https://github.com/guida-lang/package-registry" ] [ Html.text "registry" ]
+            --                     , Html.text ", or "
+            --                     , Html.a [ Attr.href "https://github.com/guida-lang" ] [ Html.text "tooling" ]
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.text "Improve documentation or examples"
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.text "Try out Guida and give us feedback"
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.text "Look for "
+            --                     , Html.a [ Attr.href "https://github.com/guida-lang/compiler/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22" ] [ Html.text "good first issues" ]
+            --                     , Html.text " if you're just getting started"
+            --                     ]
+            --                 , Html.li []
+            --                     [ Html.text "Port known issues or improvements from the Elm ecosystem"
+            --                     ]
+            --                 ]
+            --             ]
+            --         , Html.p []
+            --             [ Html.text "Guida builds on projects like "
+            --             , Html.a [ Attr.href "https://github.com/elm/compiler" ] [ Html.text "elm/compiler" ]
+            --             , Html.text ", "
+            --             , Html.a [ Attr.href "https://github.com/avh4/elm-format" ] [ Html.text "elm-format" ]
+            --             , Html.text ", "
+            --             , Html.a [ Attr.href "https://github.com/elm-explorations/test" ] [ Html.text "elm-test" ]
+            --             , Html.text ", and "
+            --             , Html.a [ Attr.href "https://github.com/zwilias/elm-json" ] [ Html.text "elm-json" ]
+            --             , Html.text ". If you've encountered issues or ideas in those tools that feel worth bringing into Guida, feel free to reference them in a new issue or PR."
+            --             ]
+            --         ]
+            --     , Html.section []
+            --         [ Html.h2 [] [ Html.text "Packages" ]
+            --         , Html.p []
+            --             [ Html.text "Explore and publish libraries with the "
+            --             , Html.a [ Attr.href "https://package.guida-lang.org" ] [ Html.text "Guida package registry" ]
+            --             , Html.text "."
+            --             ]
+            --         ]
+            --     ]
+            -- , Html.footer []
+            --     [ Html.p []
+            --         [ Html.text "Guida builds on the work of the Elm community and related projects. We aim to carry the torch forward while staying true to what makes Elm great."
+            --         ]
+            --     ]
             ]
-        , Layout.Footer.view (Session.year session)
-        ]
     }
-
-
-headerMode : Layout.Header.Mode Msg
-headerMode =
-    Layout.Header.Navigation
-        [ Layout.Header.Link
-            { label = [ Html.text "Try" ]
-            , href = "/try"
-            }
-        , Layout.Header.Link
-            { label = [ Html.text "Documentation" ]
-            , href = "/docs"
-            }
-        , Layout.Header.Link
-            { label = [ Html.text "Packages" ]
-            , href = "https://package.guida-lang.org"
-            }
-        ]

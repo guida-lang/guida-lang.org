@@ -7,8 +7,13 @@ module Main exposing
     )
 
 import Browser
+import Browser.Events
 import Browser.Navigation as Nav
+import Components.ThemeToggle as ThemeToggle
 import Html
+import Page.Community as Community
+import Page.Docs as Docs
+import Page.Examples as Examples
 import Page.Home as Home
 import Page.NotFound as NotFound
 import Page.Try as Try
@@ -29,14 +34,27 @@ type alias Model =
 
 type CurrentPage
     = NotFound
-    | Home Home.Model
+    | Home
+    | Docs
+    | Community
+    | Examples
     | Try Try.Model
 
 
-init : Int -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init year url navKey =
+init : Flags -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey =
+    let
+        theme : ThemeToggle.Theme
+        theme =
+            case flags.theme of
+                Just "dark" ->
+                    ThemeToggle.Dark
+
+                _ ->
+                    ThemeToggle.Light
+    in
     changeRouteTo (Route.fromUrl url)
-        { session = Session.init year navKey
+        { session = Session.init flags.year theme navKey
         , currentPage = NotFound
         }
 
@@ -52,22 +70,32 @@ changeRouteTo maybeRoute model =
             ( { model | currentPage = NotFound }, Cmd.none )
 
         Just Route.Home ->
-            Home.init
-                |> updateWith Home HomeMsg model
+            ( { model | currentPage = Home }, Cmd.none )
 
-        Just Route.Try ->
-            Try.init Nothing
-                |> updateWith Try TryMsg model
+        Just Route.Docs ->
+            ( { model | currentPage = Docs }, Cmd.none )
+
+        Just Route.Community ->
+            ( { model | currentPage = Community }, Cmd.none )
+
+        Just Route.Examples ->
+            ( { model | currentPage = Examples }, Cmd.none )
 
         Just (Route.Example example) ->
             Try.init (Just example)
+                |> updateWith Try TryMsg model
+
+        Just Route.Try ->
+            Try.init Nothing
                 |> updateWith Try TryMsg model
 
 
 type Msg
     = ChangedUrl Url
     | ClickedLink Browser.UrlRequest
-    | HomeMsg Home.Msg
+      -- SESSION
+    | SessionMsg Session.Msg
+      -- PAGES
     | TryMsg Try.Msg
 
 
@@ -89,10 +117,12 @@ update msg model =
                     , Nav.load url
                     )
 
-        ( HomeMsg subMsg, Home subModel ) ->
-            Home.update subMsg subModel
-                |> updateWith Home HomeMsg model
+        -- SESSION
+        ( SessionMsg subMsg, _ ) ->
+            Session.update subMsg model.session
+                |> Tuple.mapFirst (\session -> { model | session = session })
 
+        -- PAGES
         ( TryMsg subMsg, Try subModel ) ->
             Try.update subMsg subModel
                 |> updateWith Try TryMsg model
@@ -110,15 +140,38 @@ updateWith toCurrentPage toMsg model =
 -- SUBSCRIPTIONS
 
 
+withSidebarBreakpoint : Int
+withSidebarBreakpoint =
+    1024
+
+
+withoutSidebarBreakpoint : Int
+withoutSidebarBreakpoint =
+    768
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.currentPage of
-        Try subModel ->
-            Try.subscriptions subModel
-                |> Sub.map TryMsg
+    let
+        breakpoint : Int
+        breakpoint =
+            case model.currentPage of
+                Docs ->
+                    withSidebarBreakpoint
 
-        _ ->
-            Sub.none
+                _ ->
+                    withoutSidebarBreakpoint
+    in
+    Sub.batch
+        [ Browser.Events.onResize (\w _ -> SessionMsg (Session.OnResize { breakpoint = breakpoint, width = w }))
+        , case model.currentPage of
+            Try subModel ->
+                Try.subscriptions subModel
+                    |> Sub.map TryMsg
+
+            _ ->
+                Sub.none
+        ]
 
 
 
@@ -131,11 +184,20 @@ view model =
         NotFound ->
             viewPage never NotFound.view
 
-        Home subModel ->
-            viewPage HomeMsg (Home.view model.session subModel)
+        Home ->
+            Home.view model.session SessionMsg
+
+        Docs ->
+            Docs.view model.session SessionMsg
+
+        Community ->
+            Community.view model.session SessionMsg
+
+        Examples ->
+            Examples.view model.session SessionMsg
 
         Try subModel ->
-            viewPage TryMsg (Try.view subModel)
+            Try.view model.session SessionMsg TryMsg subModel
 
 
 viewPage : (msg -> Msg) -> Browser.Document msg -> Browser.Document Msg
@@ -150,7 +212,9 @@ viewPage toMsg { title, body } =
 
 
 type alias Flags =
-    Int
+    { theme : Maybe String
+    , year : Int
+    }
 
 
 main : Program Flags Model Msg

@@ -1,239 +1,113 @@
 module Layout.Header exposing
-    ( Enabled(..)
-    , Item(..)
-    , Mode(..)
+    ( Config
     , view
     )
 
+import Components.Link as Link
+import Components.Logo as Logo
+import Components.MobileNavigation as MobileNavigation
+import Components.ThemeToggle as ThemeToggle
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Events as Events
+import Html.Attributes.Aria as Aria
 import Icon
+import Layout.Global as Global
+import Session exposing (Session)
 import Svg.Attributes as SvgAttr
 
 
-type Mode msg
-    = Navigation (List (Item msg))
-    | Custom (Maybe (Item msg)) (List (Item msg)) (List (Html msg))
+type alias Config msg =
+    { session : Session
+    , className : Maybe String
+    , hasSidebar : Bool
+    , isInsideMobileNavigation : Bool
+    , setThemeMsg : ThemeToggle.Theme -> msg
+    , toggleNavigationMsg : msg
+    }
 
 
-type Item msg
-    = Button { label : List (Html msg), msg : Enabled msg }
-    | Link { label : List (Html msg), href : String }
-
-
-type Enabled msg
-    = Enabled msg
-    | Disabled
-
-
-view : Mode msg -> msg -> Bool -> Html msg
-view mode toggleNavigation showNavigation =
-    Html.header [ Attr.class "absolute inset-x-0 top-0 z-50 shadow-sm" ]
-        (Html.nav
-            [ Attr.class "flex items-center justify-between p-6"
-            , Attr.attribute "aria-label" "Global"
+topLevelNavItem : Global.NavItem msg -> Html msg
+topLevelNavItem { href, children } =
+    Html.li []
+        [ Link.view
+            [ Attr.href href
+            , Attr.class "text-sm/5 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
             ]
-            [ Html.div
-                [ Attr.class "flex lg:flex-1"
-                ]
-                [ Html.a
-                    [ Attr.href "/"
-                    , Attr.class "inline-flex items-center gap-x-1.5 font-mono text-2xl -m-1.5 p-1.5 text-amber-500 hover:text-amber-400"
-                    ]
-                    [ Icon.logo [ SvgAttr.class "h-8 w-auto" ]
-                    , Html.div [ Attr.class "" ]
-                        [ Html.text "guida"
-                        ]
-                    ]
-                ]
-            , Html.div
-                [ Attr.class "flex lg:hidden"
-                ]
-                [ Html.button
-                    [ Attr.type_ "button"
-                    , Attr.class "-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-                    , Events.onClick toggleNavigation
-                    ]
-                    [ Html.span
-                        [ Attr.class "sr-only"
-                        ]
-                        [ Html.text "Open main menu"
-                        ]
-                    , Icon.burger [ SvgAttr.class "size-6" ]
-                    ]
-                ]
-            , Html.div
-                [ Attr.class "hidden lg:flex lg:gap-x-8 items-center"
-                ]
-                (viewTopLevelMode mode)
-            ]
-            :: navigationMenu mode toggleNavigation showNavigation
-        )
-
-
-viewTopLevelMode : Mode msg -> List (Html msg)
-viewTopLevelMode mode =
-    case mode of
-        Navigation items ->
-            List.map viewTopLevelItem items
-
-        Custom (Just highlightedItem) items _ ->
-            List.map viewTopLevelItem (highlightedItem :: items)
-
-        Custom Nothing items _ ->
-            List.map viewTopLevelItem items
-
-
-viewTopLevelItem : Item msg -> Html msg
-viewTopLevelItem item =
-    case item of
-        Button button ->
-            let
-                eventAttrs : List (Html.Attribute msg)
-                eventAttrs =
-                    case button.msg of
-                        Enabled msg ->
-                            [ Events.onClick msg ]
-
-                        Disabled ->
-                            [ Attr.class "cursor-not-allowed"
-                            , Attr.disabled True
-                            ]
-            in
-            Html.button
-                (Attr.class "inline-flex items-center gap-x-1.5 rounded-md bg-amber-600 px-2 py-1 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-                    :: eventAttrs
-                )
-                button.label
-
-        Link link ->
-            Html.a
-                [ Attr.class "flex gap-x-3 text-sm/6 font-semibold text-gray-900"
-                , Attr.href link.href
-                ]
-                link.label
-
-
-navigationMenu : Mode msg -> msg -> Bool -> List (Html msg)
-navigationMenu mode toggleNavigation showNavigation =
-    if showNavigation then
-        let
-            highlightedItem : List (Html msg)
-            highlightedItem =
-                case mode of
-                    Custom (Just item) _ _ ->
-                        [ viewTopLevelItem item ]
-
-                    _ ->
-                        []
-        in
-        [ Html.div
-            [ Attr.class "relative z-50 lg:hidden"
-            , Attr.attribute "aria-labelledby" "slide-over-title"
-            , Attr.attribute "role" "dialog"
-            , Attr.attribute "aria-modal" "true"
-            ]
-            [ Html.div
-                [ Attr.class "fixed inset-0 bg-gray-500/75"
-                , Attr.attribute "aria-hidden" "true"
-                ]
-                []
-            , Html.div
-                [ Attr.class "fixed inset-0 overflow-hidden"
-                ]
-                [ Html.div
-                    [ Attr.class "absolute inset-0 overflow-hidden"
-                    ]
-                    [ Html.div
-                        [ Attr.class "pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10"
-                        ]
-                        [ Html.div
-                            [ Attr.class "pointer-events-auto w-screen max-w-sm"
-                            ]
-                            [ Html.div
-                                [ Attr.class "flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl"
-                                ]
-                                [ Html.div
-                                    [ Attr.class "px-6"
-                                    ]
-                                    [ Html.div
-                                        [ Attr.class "flex items-start"
-                                        , Attr.classList
-                                            [ ( "justify-between", not (List.isEmpty highlightedItem) )
-                                            , ( "justify-end", List.isEmpty highlightedItem )
-                                            ]
-                                        ]
-                                        (highlightedItem
-                                            ++ [ Html.div
-                                                    [ Attr.class "flex h-7 items-center"
-                                                    ]
-                                                    [ Html.button
-                                                        [ Attr.type_ "button"
-                                                        , Attr.class "-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
-                                                        , Events.onClick toggleNavigation
-                                                        ]
-                                                        [ Html.span
-                                                            [ Attr.class "sr-only"
-                                                            ]
-                                                            [ Html.text "Close panel" ]
-                                                        , Icon.cross [ SvgAttr.class "size-6" ]
-                                                        ]
-                                                    ]
-                                               ]
-                                        )
-                                    ]
-                                , Html.div
-                                    [ Attr.class "relative mt-6 flex-1 px-6"
-                                    ]
-                                    (viewSidebarMode mode)
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+            children
         ]
 
-    else
-        []
+
+socialLink : String -> (List (Html.Attribute msg) -> Html msg) -> List (Html msg) -> Html msg
+socialLink href icon children =
+    Link.view [ Attr.href href, Attr.class "flex h-6 w-6 items-center justify-center rounded-md transition hover:bg-zinc-900/5 dark:hover:bg-white/5" ]
+        [ Html.span [ Attr.class "sr-only" ] children
+        , icon [ SvgAttr.class "h-5 w-5 fill-zinc-900 dark:fill-white" ]
+        ]
 
 
-viewSidebarMode : Mode msg -> List (Html msg)
-viewSidebarMode mode =
-    case mode of
-        Navigation items ->
-            List.map viewSidebarItem items
+view : Config msg -> Html msg
+view config =
+    let
+        isMobileNavigationOpen =
+            Session.isMobileNavigationOpen config.session
 
-        Custom _ _ content ->
-            content
-
-
-viewSidebarItem : Item msg -> Html msg
-viewSidebarItem item =
-    case item of
-        Button button ->
-            let
-                eventAttrs : List (Html.Attribute msg)
-                eventAttrs =
-                    case button.msg of
-                        Enabled msg ->
-                            [ Events.onClick msg ]
-
-                        Disabled ->
-                            [ Attr.class "cursor-not-allowed"
-                            , Attr.disabled True
-                            ]
-            in
-            Html.button
-                (Attr.class "rounded-md bg-amber-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-amber-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
-                    :: eventAttrs
-                )
-                button.label
-
-        Link link ->
-            Html.a
-                [ Attr.class "-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                , Attr.href link.href
+        classNameAttrs =
+            config.className
+                |> Maybe.map (List.singleton << Attr.class)
+                |> Maybe.withDefault []
+    in
+    Html.header
+        (Aria.role "banner"
+            :: Attr.classList
+                [ ( "fixed inset-x-0 top-0 z-50 flex h-14 items-center justify-between gap-12 px-4 transition sm:px-6", True )
+                , ( "lg:left-72 lg:z-30 lg:px-8 xl:left-80", config.hasSidebar )
+                , ( "backdrop-blur-xs dark:backdrop-blur-sm", not config.isInsideMobileNavigation )
+                , ( "bg-white dark:bg-zinc-900", config.isInsideMobileNavigation )
+                , ( "bg-white/[var(--bg-opacity-light)] dark:bg-zinc-900/[var(--bg-opacity-dark)]", not config.isInsideMobileNavigation )
+                , ( "lg:justify-end", config.hasSidebar )
                 ]
-                link.label
+            :: classNameAttrs
+        )
+        [ Html.div
+            [ Attr.classList
+                [ ( "absolute inset-x-0 top-full h-px transition", True )
+                , ( "bg-zinc-900/7.5 dark:bg-white/7.5", config.isInsideMobileNavigation || not isMobileNavigationOpen )
+                ]
+            ]
+            []
+        , Html.div
+            [ Attr.classList
+                [ ( "flex items-center gap-4", True )
+                , ( "lg:hidden", config.hasSidebar )
+                ]
+            ]
+            [ MobileNavigation.view { hasSidebar = config.hasSidebar, isOpen = isMobileNavigationOpen, toggleMsg = config.toggleNavigationMsg }
+            , Link.view [ Attr.href "/", Aria.ariaLabel "Home" ]
+                [ Logo.view "h-6"
+                ]
+            ]
+        , Html.div [ Attr.class "flex items-center gap-4" ]
+            [ Html.nav [ Aria.role "navigation", Attr.class "hidden md:block" ]
+                [ Html.ul [ Aria.role "list", Attr.class "flex items-center gap-6" ]
+                    (List.map topLevelNavItem Global.topLevelNavItems)
+                ]
+            , Html.div [ Attr.class "hidden md:block md:h-5 md:w-px md:bg-zinc-900/10 md:dark:bg-white/15" ] []
+            , Html.div [ Attr.class "flex gap-3" ]
+                [ ThemeToggle.view (Session.theme config.session) config.setThemeMsg
+                , socialLink Global.githubLink Icon.github [ Html.text "Follow us on GitHub" ]
+                , socialLink Global.discordLink Icon.discord [ Html.text "Join our Discord server" ]
+                ]
+            ]
+
+        -- , Html.h1 [ Attr.class "title" ] [ Html.a [ Attr.href "/" ] [ Html.text "Guida" ] ]
+        -- , Html.p [ Attr.class "subtitle" ] [ Html.text "Functional programming, evolved!" ]
+        -- , Html.nav [ Aria.role "navigation" ]
+        --     [ Html.ul []
+        --         [ Html.li [] [ Html.a [ Attr.href "/examples" ] [ Html.text "Examples" ] ]
+        --         , Html.li [] [ Html.a [ Attr.href "/try" ] [ Html.text "Try" ] ]
+        --         , Html.li [] [ Html.a [ Attr.href "/docs" ] [ Html.text "Documentation" ] ]
+        --         , Html.li [] [ Html.a [ Attr.href "/community" ] [ Html.text "Community" ] ]
+        --         , Html.li [] [ Html.a [ Attr.href "https://package.guida-lang.org" ] [ Html.text "Packages" ] ]
+        --         ]
+        --     ]
+        ]
