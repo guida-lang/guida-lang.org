@@ -17,7 +17,6 @@ type alias NavItem msg =
 topLevelNavItems : List (NavItem msg)
 topLevelNavItems =
     [ { href = "/examples", children = [ Html.text "Examples" ] }
-    , { href = "/try", children = [ Html.text "Try" ] }
     , { href = "/docs", children = [ Html.text "Docs" ] }
     , { href = "/community", children = [ Html.text "Community" ] }
     , { href = "https://package.guida-lang.org", children = [ Html.text "Packages" ] }

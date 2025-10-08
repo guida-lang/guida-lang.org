@@ -1,10 +1,4 @@
-module Main exposing
-    ( CurrentPage
-    , Flags
-    , Model
-    , Msg
-    , main
-    )
+module Main exposing (main)
 
 import Browser
 import Browser.Events
@@ -35,7 +29,7 @@ type alias Model =
 type CurrentPage
     = NotFound
     | Home
-    | Docs
+    | Docs Docs.Model
     | Community
     | Examples
     | Try Try.Model
@@ -72,8 +66,9 @@ changeRouteTo maybeRoute model =
         Just Route.Home ->
             ( { model | currentPage = Home }, Cmd.none )
 
-        Just Route.Docs ->
-            ( { model | currentPage = Docs }, Cmd.none )
+        Just (Route.Docs subRoute) ->
+            Docs.init subRoute
+                |> updateWith Docs identity model
 
         Just Route.Community ->
             ( { model | currentPage = Community }, Cmd.none )
@@ -108,7 +103,7 @@ update msg model =
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model
+                    ( { model | session = Session.closeMobileNavigation model.session }
                     , Nav.pushUrl (Session.navKey model.session) (Url.toString url)
                     )
 
@@ -156,7 +151,7 @@ subscriptions model =
         breakpoint : Int
         breakpoint =
             case model.currentPage of
-                Docs ->
+                Docs _ ->
                     withSidebarBreakpoint
 
                 _ ->
@@ -187,8 +182,8 @@ view model =
         Home ->
             Home.view model.session SessionMsg
 
-        Docs ->
-            Docs.view model.session SessionMsg
+        Docs subModel ->
+            Docs.view model.session SessionMsg subModel
 
         Community ->
             Community.view model.session SessionMsg

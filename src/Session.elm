@@ -1,6 +1,7 @@
 port module Session exposing
     ( Msg(..)
     , Session
+    , closeMobileNavigation
     , init
     , isMobileNavigationOpen
     , navKey
@@ -52,6 +53,11 @@ navKey =
 isMobileNavigationOpen : Session -> Bool
 isMobileNavigationOpen =
     .isMobileNavigationOpen
+
+
+closeMobileNavigation : Session -> Session
+closeMobileNavigation session =
+    { session | isMobileNavigationOpen = False }
 
 
 
