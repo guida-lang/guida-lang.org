@@ -58,6 +58,9 @@ view session toSessionMsg model =
                 Route.Records ->
                     recordsView
 
+                Route.Interop ->
+                    interopView
+
                 Route.Commands command ->
                     commandView command
 
@@ -876,6 +879,15 @@ recordsView =
     ]
 
 
+interopView : List (Html msg)
+interopView =
+    [ Html.h1 [] [ Html.text "JavaScript Interop" ]
+    , References.view
+        [ "https://elm-lang.org/docs/records"
+        ]
+    ]
+
+
 commandView : Route.Command -> List (Html msg)
 commandView command =
     case command of
@@ -1034,6 +1046,9 @@ sidebarNavigation model =
             , { title = "From JavaScript or Elm?", href = "/docs/from-javascript-or-elm", active = model.section == Route.FromJavaScriptOrElm }
             , { title = "guida.json", href = "/docs/guida-json", active = model.section == Route.GuidaJson }
             , { title = "Records", href = "/docs/records", active = model.section == Route.Records }
+
+            -- guide.elm-lang.org
+            , { title = "JavaScript Interop", href = "/docs/interop", active = model.section == Route.Interop }
             ]
       }
     , { title = "Commands"

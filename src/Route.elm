@@ -27,6 +27,7 @@ type DocumentationSection
     | FromJavaScriptOrElm
     | GuidaJson
     | Records
+    | Interop
     | Commands Command
     | Hints Hint
 
@@ -185,6 +186,7 @@ parser =
         , Parser.map (Docs FromJavaScriptOrElm) (Parser.s "docs" </> Parser.s "from-javascript-or-elm")
         , Parser.map (Docs GuidaJson) (Parser.s "docs" </> Parser.s "guida-json")
         , Parser.map (Docs Records) (Parser.s "docs" </> Parser.s "records")
+        , Parser.map (Docs Interop) (Parser.s "docs" </> Parser.s "interop")
         , Parser.map (Docs << Commands) (Parser.s "docs" </> Parser.s "1.0.0" </> Parser.s "commands" </> commandParser)
         , Parser.map (Docs << Hints) (Parser.s "docs" </> Parser.s "1.0.0" </> Parser.s "hints" </> hintParser)
         , Parser.map Community (Parser.s "community")
