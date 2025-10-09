@@ -1,10 +1,15 @@
-module Main exposing (main)
+module Main exposing
+    ( CurrentPage
+    , Flags
+    , Model
+    , Msg
+    , main
+    )
 
 import Browser
 import Browser.Events
 import Browser.Navigation as Nav
 import Components.ThemeToggle as ThemeToggle
-import Html
 import Page.Community as Community
 import Page.Docs as Docs
 import Page.Examples as Examples
@@ -193,13 +198,6 @@ view model =
 
         Try subModel ->
             Try.view model.session SessionMsg TryMsg subModel
-
-
-viewPage : (msg -> Msg) -> Browser.Document msg -> Browser.Document Msg
-viewPage toMsg { title, body } =
-    { title = title
-    , body = List.map (Html.map toMsg) body
-    }
 
 
 

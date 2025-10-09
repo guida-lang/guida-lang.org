@@ -1,4 +1,4 @@
-module Components.Note exposing (..)
+module Components.Note exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr

@@ -5,7 +5,7 @@ module Page.Docs exposing
     )
 
 import Browser
-import Components.Button as Button exposing (Type(..))
+import Components.Button as Button
 import Components.CodeBlock as CodeBlock
 import Components.Note as Note
 import Components.Properties as Properties
@@ -1033,9 +1033,11 @@ hintView hint =
 sidebarNavigation : Model -> Navigation
 sidebarNavigation model =
     let
+        activeCommand : Route.Command -> Bool
         activeCommand cmd =
             model.section == Route.Commands cmd
 
+        activeHint : Route.Hint -> Bool
         activeHint hint =
             model.section == Route.Hints hint
     in

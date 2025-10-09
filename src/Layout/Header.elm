@@ -48,9 +48,11 @@ socialLink href icon children =
 view : Config msg -> Html msg
 view config =
     let
+        isMobileNavigationOpen : Bool
         isMobileNavigationOpen =
             Session.isMobileNavigationOpen config.session
 
+        classNameAttrs : List (Html.Attribute msg)
         classNameAttrs =
             config.className
                 |> Maybe.map (List.singleton << Attr.class)

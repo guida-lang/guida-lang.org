@@ -82,6 +82,7 @@ view type_ variant maybeArrow attrs children =
         arrowIconElem : Html msg
         arrowIconElem =
             let
+                variantAttrs : List (Svg.Attribute msg)
                 variantAttrs =
                     case variant of
                         Text ->
@@ -90,6 +91,7 @@ view type_ variant maybeArrow attrs children =
                         _ ->
                             []
 
+                arrowAttrs : List (Svg.Attribute msg)
                 arrowAttrs =
                     case maybeArrow of
                         Just LeftArrow ->

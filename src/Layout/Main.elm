@@ -1,5 +1,6 @@
 module Layout.Main exposing
-    ( fullscreenView
+    ( Config
+    , fullscreenView
     , view
     )
 
@@ -137,7 +138,7 @@ fullscreenView session toSessionMsg children =
     in
     [ Html.div [ Attr.class "contents" ]
         [ Html.div [ Attr.class "w-full" ]
-            [ Html.div [ Attr.classList [ ( "h-full", True ) ] ]
+            [ Html.div [ Attr.class "h-full" ]
                 [ Html.header [ Attr.class "contents lg:pointer-events-none lg:fixed lg:inset-0 lg:z-40 lg:flex" ]
                     [ sidebarView config session toSessionMsg
                     ]

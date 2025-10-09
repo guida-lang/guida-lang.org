@@ -1,4 +1,7 @@
-module Components.Properties exposing (view)
+module Components.Properties exposing
+    ( Property
+    , view
+    )
 
 import Html exposing (Html)
 import Html.Attributes as Attr

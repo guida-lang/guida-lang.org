@@ -1,13 +1,8 @@
 module Icon exposing
-    ( arrowPath
-    , burger
-    , check
-    , cross
-    , discord
+    ( discord
     , github
     , info
     , logo
-    , xMark
     )
 
 import Html
@@ -15,82 +10,6 @@ import Html.Attributes as Attr
 import Html.Attributes.Aria as Aria
 import Svg exposing (Svg)
 import Svg.Attributes as SvgAttr
-
-
-arrowPath : List (Html.Attribute msg) -> Svg msg
-arrowPath attrs =
-    Svg.svg
-        (SvgAttr.fill "none"
-            :: SvgAttr.viewBox "0 0 24 24"
-            :: SvgAttr.strokeWidth "1.5"
-            :: SvgAttr.stroke "currentColor"
-            :: Attr.attribute "aria-hidden" "true"
-            :: attrs
-        )
-        [ Svg.path
-            [ SvgAttr.strokeLinecap "round"
-            , SvgAttr.strokeLinejoin "round"
-            , SvgAttr.d "M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-            ]
-            []
-        ]
-
-
-burger : List (Html.Attribute msg) -> Svg msg
-burger attrs =
-    Svg.svg
-        (SvgAttr.fill "none"
-            :: SvgAttr.viewBox "0 0 24 24"
-            :: SvgAttr.strokeWidth "1.5"
-            :: SvgAttr.stroke "currentColor"
-            :: Attr.attribute "aria-hidden" "true"
-            :: attrs
-        )
-        [ Svg.path
-            [ SvgAttr.strokeLinecap "round"
-            , SvgAttr.strokeLinejoin "round"
-            , SvgAttr.d "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-            ]
-            []
-        ]
-
-
-check : List (Html.Attribute msg) -> Svg msg
-check attrs =
-    Svg.svg
-        (SvgAttr.fill "none"
-            :: SvgAttr.viewBox "0 0 24 24"
-            :: SvgAttr.strokeWidth "1.5"
-            :: SvgAttr.stroke "currentColor"
-            :: Attr.attribute "aria-hidden" "true"
-            :: attrs
-        )
-        [ Svg.path
-            [ SvgAttr.strokeLinecap "round"
-            , SvgAttr.strokeLinejoin "round"
-            , SvgAttr.d "m4.5 12.75 6 6 9-13.5"
-            ]
-            []
-        ]
-
-
-cross : List (Html.Attribute msg) -> Svg msg
-cross attrs =
-    Svg.svg
-        (SvgAttr.fill "none"
-            :: SvgAttr.viewBox "0 0 24 24"
-            :: SvgAttr.strokeWidth "1.5"
-            :: SvgAttr.stroke "currentColor"
-            :: Attr.attribute "aria-hidden" "true"
-            :: attrs
-        )
-        [ Svg.path
-            [ SvgAttr.strokeLinecap "round"
-            , SvgAttr.strokeLinejoin "round"
-            , SvgAttr.d "M6 18 18 6M6 6l12 12"
-            ]
-            []
-        ]
 
 
 github : List (Html.Attribute msg) -> Svg msg
@@ -162,25 +81,6 @@ logo attrs =
         )
         [ Svg.path
             [ SvgAttr.d "M26.458 37.248c-52.644 0 24.646 37.221-8.178-3.938s-13.734 42.475-2.02-8.849-41.771 15.746 5.66-7.096-38.355-22.841 9.077 0-6.056-44.228 5.659 7.096 30.803-32.31-2.02 8.85c-32.823 41.158 44.466 3.937-8.178 3.937z"
-            ]
-            []
-        ]
-
-
-xMark : List (Html.Attribute msg) -> Svg msg
-xMark attrs =
-    Svg.svg
-        (SvgAttr.fill "none"
-            :: SvgAttr.viewBox "0 0 24 24"
-            :: SvgAttr.strokeWidth "1.5"
-            :: SvgAttr.stroke "currentColor"
-            :: Attr.attribute "aria-hidden" "true"
-            :: attrs
-        )
-        [ Svg.path
-            [ SvgAttr.strokeLinecap "round"
-            , SvgAttr.strokeLinejoin "round"
-            , SvgAttr.d "M6 18 18 6M6 6l12 12"
             ]
             []
         ]

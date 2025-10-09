@@ -1,4 +1,4 @@
-module Components.CodeBlock exposing (..)
+module Components.CodeBlock exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr

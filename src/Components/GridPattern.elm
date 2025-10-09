@@ -5,6 +5,7 @@ module Components.GridPattern exposing
 
 import Html exposing (Html)
 import Html.Attributes.Aria as Aria
+import Icon
 import Svg
 import Svg.Attributes as SvgAttr
 
@@ -39,14 +40,24 @@ view attrs config =
                         ]
                         (List.map
                             (\( x, y ) ->
-                                Svg.rect
-                                    [ SvgAttr.strokeWidth "0"
+                                -- Svg.rect
+                                --     [ SvgAttr.strokeWidth "0"
+                                --     , SvgAttr.width (String.fromInt (config.width + 1))
+                                --     , SvgAttr.height (String.fromInt (config.height + 1))
+                                --     , SvgAttr.x (String.fromInt (x * config.width))
+                                --     , SvgAttr.y (String.fromInt (y * config.height))
+                                --     ]
+                                --     []
+                                Icon.logo
+                                    [ SvgAttr.class "dark:text-amber-700/20"
+                                    , SvgAttr.strokeWidth "0"
+
+                                    --  , SvgAttr.fillOpacity "0.4"
                                     , SvgAttr.width (String.fromInt (config.width + 1))
                                     , SvgAttr.height (String.fromInt (config.height + 1))
                                     , SvgAttr.x (String.fromInt (x * config.width))
                                     , SvgAttr.y (String.fromInt (y * config.height))
                                     ]
-                                    []
                             )
                             config.squares
                         )

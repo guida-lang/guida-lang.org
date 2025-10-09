@@ -1,4 +1,4 @@
-module Components.MobileNavigation exposing (..)
+module Components.MobileNavigation exposing (view)
 
 import Html exposing (Html)
 import Html.Attributes as Attr
@@ -37,6 +37,7 @@ xIcon className =
 view : { hasSidebar : Bool, isOpen : Bool, toggleMsg : msg } -> Html msg
 view { hasSidebar, isOpen, toggleMsg } =
     let
+        toogleIcon : String -> Html msg
         toogleIcon =
             if isOpen then
                 xIcon

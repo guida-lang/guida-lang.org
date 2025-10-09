@@ -1,5 +1,6 @@
 module Layout.Navigation exposing
     ( Navigation
+    , NavigationGroup
     , NavigationLink
     , view
     )
@@ -90,6 +91,7 @@ navigationLinkView navigationLink =
 activePageMarker : NavigationGroup -> List (Html msg)
 activePageMarker group =
     let
+        maybeActivePageIndex : Maybe Int
         maybeActivePageIndex =
             List.indexedMap Tuple.pair group.links
                 |> List.filter (\( _, link ) -> link.active)
