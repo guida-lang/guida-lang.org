@@ -23,8 +23,10 @@ type Route
 
 type DocumentationSection
     = Introduction
-    | Elm
+    | Syntax
+    | FromJavaScriptOrElm
     | GuidaJson
+    | Records
     | Commands Command
     | Hints Hint
 
@@ -179,8 +181,10 @@ parser =
     Parser.oneOf
         [ Parser.map Home Parser.top
         , Parser.map (Docs Introduction) (Parser.s "docs")
-        , Parser.map (Docs Elm) (Parser.s "docs" </> Parser.s "elm")
+        , Parser.map (Docs Syntax) (Parser.s "docs" </> Parser.s "syntax")
+        , Parser.map (Docs FromJavaScriptOrElm) (Parser.s "docs" </> Parser.s "from-javascript-or-elm")
         , Parser.map (Docs GuidaJson) (Parser.s "docs" </> Parser.s "guida-json")
+        , Parser.map (Docs Records) (Parser.s "docs" </> Parser.s "records")
         , Parser.map (Docs << Commands) (Parser.s "docs" </> Parser.s "1.0.0" </> Parser.s "commands" </> commandParser)
         , Parser.map (Docs << Hints) (Parser.s "docs" </> Parser.s "1.0.0" </> Parser.s "hints" </> hintParser)
         , Parser.map Community (Parser.s "community")

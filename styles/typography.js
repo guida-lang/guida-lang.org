@@ -215,8 +215,6 @@ module.exports = {
             width: '100%',
             tableLayout: 'auto',
             textAlign: 'left',
-            marginTop: theme('spacing.8'),
-            marginBottom: theme('spacing.8'),
             lineHeight: theme('lineHeight.6'),
           },
           thead: {

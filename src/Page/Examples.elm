@@ -4,7 +4,6 @@ import Browser
 import Components.Button as Button
 import Html exposing (Html)
 import Html.Attributes as Attr
-import Html.Attributes.Aria as Aria
 import Layout.Main as Layout
 import Session exposing (Session)
 

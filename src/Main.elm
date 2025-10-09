@@ -177,7 +177,7 @@ view : Model -> Browser.Document Msg
 view model =
     case model.currentPage of
         NotFound ->
-            viewPage never NotFound.view
+            NotFound.view model.session SessionMsg
 
         Home ->
             Home.view model.session SessionMsg
