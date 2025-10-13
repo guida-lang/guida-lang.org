@@ -9,6 +9,7 @@ import Components.CodeBlock as CodeBlock
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Attributes.Aria as Aria
+import Icon
 import Layout.Main as Layout
 import Layout.Navigation exposing (Navigation)
 import Markdown.Block
@@ -20,6 +21,7 @@ import Parser.Advanced
 import Result.Extra as Result
 import Route
 import Session exposing (Session)
+import Svg.Attributes as SvgAttr
 
 
 
@@ -106,6 +108,14 @@ htmlRenderer =
                     )
                     |> Markdown.Html.withAttribute "name"
                     |> Markdown.Html.withOptionalAttribute "type"
+                , Markdown.Html.tag "todo"
+                    (\_ ->
+                        Html.div [ Attr.class "my-6 flex gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-50/50 p-4 text-sm/6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-amber-200 dark:[--tw-prose-links-hover:var(--color-amber-300)] dark:[--tw-prose-links:var(--color-white)]" ]
+                            [ Icon.info [ SvgAttr.class "mt-1 h-4 w-4 flex-none fill-amber-500 stroke-white dark:fill-amber-200/20 dark:stroke-amber-200" ]
+                            , Html.div [ Attr.class "[&>:first-child]:mt-0 [&>:last-child]:mb-0" ]
+                                [ Html.text "🚧 Work in Progress" ]
+                            ]
+                    )
                 ]
     }
 
@@ -141,76 +151,172 @@ view session toSessionMsg model =
                     whatIsGuidaView
 
                 Route.Installation ->
-                    markdownRender "# Installation"
+                    markdownRender """
+# Installation
+
+<todo />
+"""
 
                 Route.YourFirstProgram ->
-                    markdownRender "# Your First Program"
+                    markdownRender """
+# Your First Program
+
+<todo />
+"""
 
                 Route.ProjectSetup ->
-                    markdownRender "# Project Setup"
+                    markdownRender """
+# Project Setup
+
+<todo />
+"""
 
                 Route.MigrationFromElm ->
-                    markdownRender "# Migration from Elm"
+                    markdownRender """
+# Migration from Elm
+
+<todo />
+"""
 
                 Route.SyntaxOverview ->
-                    markdownRender "# Syntax Overview"
+                    markdownRender """
+# Syntax Overview
+
+<todo />
+"""
 
                 Route.ValuesAndTypes ->
-                    markdownRender "# Values and Types"
+                    markdownRender """
+# Values and Types
+
+<todo />
+"""
 
                 Route.FunctionsAndExpressions ->
-                    markdownRender "# Functions and Expressions"
+                    markdownRender """
+# Functions and Expressions
+
+<todo />
+"""
 
                 Route.ModulesAndImports ->
-                    markdownRender "# Modules and Imports"
+                    markdownRender """
+# Modules and Imports
+
+<todo />
+"""
 
                 Route.CustomTypes ->
-                    markdownRender "# Custom Types"
+                    markdownRender """
+# Custom Types
+
+<todo />
+"""
 
                 Route.PatternMatching ->
-                    markdownRender "# Pattern Matching"
+                    markdownRender """
+# Pattern Matching
+
+<todo />
+"""
 
                 Route.ErrorHandling ->
-                    markdownRender "# Error Handling"
+                    markdownRender """
+# Error Handling
+
+<todo />
+"""
 
                 Route.ImmutabilityAndPurity ->
-                    markdownRender "# Immutability and Purity"
+                    markdownRender """
+# Immutability and Purity
+
+<todo />
+"""
 
                 Route.TheTypeSystem ->
-                    markdownRender "# The Type System"
+                    markdownRender """
+# The Type System
+
+<todo />
+"""
 
                 Route.ConcurrencyAndEffects ->
-                    markdownRender "# Concurrency and Effects"
+                    markdownRender """
+# Concurrency and Effects
+
+<todo />
+"""
 
                 Route.StateAndArchitecture ->
-                    markdownRender "# State and Architecture"
+                    markdownRender """
+# State and Architecture
+
+<todo />
+"""
 
                 Route.ApplicationStructure ->
-                    markdownRender "# Application Structure"
+                    markdownRender """
+# Application Structure
+
+<todo />
+"""
 
                 Route.TheGuidaArchitecture ->
-                    markdownRender "# The Guida Architecture"
+                    markdownRender """
+# The Guida Architecture
+
+<todo />
+"""
 
                 Route.RoutingAndNavigation ->
-                    markdownRender "# Routing and Navigation"
+                    markdownRender """
+# Routing and Navigation
+
+<todo />
+"""
 
                 Route.Interoperability ->
-                    markdownRender "# Interoperability"
+                    markdownRender """
+# Interoperability
+
+<todo />
+"""
 
                 Route.ContributingGettingStarted ->
-                    markdownRender "# Getting Started"
+                    markdownRender """
+# Getting Started
+
+<todo />
+"""
 
                 Route.ContributingWaysToContribute ->
-                    markdownRender "# Ways To Contribute"
+                    markdownRender """
+# Ways To Contribute
+
+<todo />
+"""
 
                 Route.ContributingDevelopmentWorkflow ->
-                    markdownRender "# Development Workflow"
+                    markdownRender """
+# Development Workflow
+
+<todo />
+"""
 
                 Route.ContributingReportingIssues ->
-                    markdownRender "# Reporting Issues"
+                    markdownRender """
+# Reporting Issues
+
+<todo />
+"""
 
                 Route.ContributingJoinTheCommunity ->
-                    markdownRender "# Join the Community"
+                    markdownRender """
+# Join the Community
+
+<todo />
+"""
 
                 Route.Commands command ->
                     commandView command
@@ -454,6 +560,8 @@ You can customize this command with the following flags:
             markdownRender """
 # guida init
 
+<todo />
+
 ---
 
 ## References
@@ -462,36 +570,60 @@ You can customize this command with the following flags:
 """
 
         Route.Make ->
-            [ Html.h1 [] [ Html.text "guida make" ]
-            ]
+            markdownRender """
+# guida make
+
+<todo />
+"""
 
         Route.Install ->
-            [ Html.h1 [] [ Html.text "guida install" ]
-            ]
+            markdownRender """
+# guida install
+
+<todo />
+"""
 
         Route.Uninstall ->
-            [ Html.h1 [] [ Html.text "guida uninstall" ]
-            ]
+            markdownRender """
+# guida uninstall
+
+<todo />
+"""
 
         Route.Bump ->
-            [ Html.h1 [] [ Html.text "guida bump" ]
-            ]
+            markdownRender """
+# guida bump
+
+<todo />
+"""
 
         Route.Diff ->
-            [ Html.h1 [] [ Html.text "guida diff" ]
-            ]
+            markdownRender """
+# guida diff
+
+<todo />
+"""
 
         Route.Publish ->
-            [ Html.h1 [] [ Html.text "guida publish" ]
-            ]
+            markdownRender """
+# guida publish
+
+<todo />
+"""
 
         Route.Format ->
-            [ Html.h1 [] [ Html.text "guida format" ]
-            ]
+            markdownRender """
+# guida format
+
+<todo />
+"""
 
         Route.Test ->
-            [ Html.h1 [] [ Html.text "guida test" ]
-            ]
+            markdownRender """
+# guida test
+
+<todo />
+"""
 
 
 hintView : Route.Hint -> List (Html msg)
