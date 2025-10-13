@@ -20,8 +20,9 @@ import Session exposing (Session)
 -- CONFIGURATION
 
 
-type alias Config =
-    { sidebarNavigation : Navigation
+type alias Config route =
+    { sidebarNavigation : Navigation route
+    , currentRoute : route
     }
 
 
@@ -29,7 +30,7 @@ type alias Config =
 -- VIEW
 
 
-sidebarView : Config -> Session -> (Session.Msg -> msg) -> Html msg
+sidebarView : Config route -> Session -> (Session.Msg -> msg) -> Html msg
 sidebarView config session toSessionMsg =
     let
         header : Html msg
@@ -54,11 +55,11 @@ sidebarView config session toSessionMsg =
                     ]
                 ]
             , header
-            , Navigation.view [ Attr.class "hidden lg:mt-10 lg:block" ] config.sidebarNavigation
+            , Navigation.view [ Attr.class "hidden lg:mt-10 lg:block" ] config.currentRoute config.sidebarNavigation
             ]
 
 
-dialogView : Config -> Session -> (Session.Msg -> msg) -> Html msg
+dialogView : Config route -> Session -> (Session.Msg -> msg) -> Html msg
 dialogView config session toSessionMsg =
     let
         openAttrs : List (Html.Attribute msg)
@@ -87,12 +88,12 @@ dialogView config session toSessionMsg =
             , toggleNavigationMsg = toSessionMsg Session.ToggleMobileNavigation
             }
         , Html.div [ Attr.class "fixed top-14 bottom-0 left-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 ring-1 shadow-lg shadow-zinc-900/10 ring-zinc-900/7.5 duration-500 ease-in-out data-closed:-translate-x-full min-[416px]:max-w-sm sm:px-6 sm:pb-10 dark:bg-zinc-900 dark:ring-zinc-800" ]
-            [ Navigation.view [] config.sidebarNavigation
+            [ Navigation.view [] config.currentRoute config.sidebarNavigation
             ]
         ]
 
 
-view : Config -> Session -> (Session.Msg -> msg) -> List (Html msg) -> List (Html msg)
+view : Config route -> Session -> (Session.Msg -> msg) -> List (Html msg) -> List (Html msg)
 view config session toSessionMsg children =
     [ Html.div [ Attr.class "contents" ]
         [ Html.div [ Attr.class "w-full" ]
@@ -105,7 +106,7 @@ view config session toSessionMsg children =
                 [ Html.header [ Attr.class "contents lg:pointer-events-none lg:fixed lg:inset-0 lg:z-40 lg:flex" ]
                     [ sidebarView config session toSessionMsg
                     ]
-                , Html.div [ Attr.class "relative flex h-full flex-col px-4 pt-14 sm:px-6 lg:px-8" ]
+                , Html.div [ Attr.id "main", Attr.class "relative flex h-full flex-col px-4 pt-14 sm:px-6 lg:px-8" ]
                     [ Html.main_ [ Attr.class "flex-auto" ]
                         [ Html.article [ Attr.class "flex h-full flex-col pt-16 pb-10" ]
                             [ Html.div
@@ -132,9 +133,9 @@ view config session toSessionMsg children =
 fullscreenView : Session -> (Session.Msg -> msg) -> List (Html msg) -> List (Html msg)
 fullscreenView session toSessionMsg children =
     let
-        config : Config
+        config : Config ()
         config =
-            { sidebarNavigation = [] }
+            { sidebarNavigation = [], currentRoute = () }
     in
     [ Html.div [ Attr.class "contents" ]
         [ Html.div [ Attr.class "w-full" ]

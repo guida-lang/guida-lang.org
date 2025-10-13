@@ -17,7 +17,7 @@ view : Session -> (Session.Msg -> msg) -> Browser.Document msg
 view session toSessionMsg =
     { title = "Guida: Home"
     , body =
-        Layout.view { sidebarNavigation = [] } session toSessionMsg <|
+        Layout.view { sidebarNavigation = [], currentRoute = () } session toSessionMsg <|
             [ HeroPattern.view
             , Html.h1 [] [ Html.text "What is Guida?" ]
             , Html.p [ Attr.class "lead" ]
@@ -33,7 +33,7 @@ view session toSessionMsg =
                 , Button.view (Button.Link "/docs") Button.Outline (Just Button.RightArrow) [] <|
                     [ Html.text "Documentation" ]
                 ]
-            , Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "Vision" ]
+            , Html.h2 [] [ Html.text "Vision" ]
             , Html.p []
                 [ Html.text "Guida builds on the foundations of Elm, aiming to advance the future of functional programming. By translating Elm's compiler from Haskell to a self-hosted environment, Guida helps developers to build reliable, maintainable, and performant applications without leaving the language they love."
                 ]
@@ -63,7 +63,7 @@ view session toSessionMsg =
                 [ Html.text "Our ultimate goal is to create a language that inherits the best aspects of Elm while adapting and growing to meet the needs of its users."
                 ]
             , Html.section []
-                [ Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "Try It" ]
+                [ Html.h2 [] [ Html.text "Try It" ]
                 , Html.p []
                     [ Html.text "Experiment with Guida in your browser. Write, run, and explore code instantly with the "
                     , Html.a [ Attr.href "/try" ] [ Html.text "online Guida playground" ]
@@ -76,7 +76,7 @@ view session toSessionMsg =
                     ]
                 ]
             , Html.section []
-                [ Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "Documentation" ]
+                [ Html.h2 [] [ Html.text "Documentation" ]
                 , Html.p []
                     [ Html.text "The "
                     , Html.a [ Attr.href "/docs" ] [ Html.text "documentation" ]
@@ -86,7 +86,7 @@ view session toSessionMsg =
                     ]
                 ]
             , Html.section []
-                [ Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "Community" ]
+                [ Html.h2 [] [ Html.text "Community" ]
                 , Html.p []
                     [ Html.text "Join us to shape the language together. See our "
                     , Html.a [ Attr.href "/community" ] [ Html.text "Community" ]
@@ -154,7 +154,7 @@ view session toSessionMsg =
                     ]
                 ]
             , Html.section []
-                [ Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "Packages" ]
+                [ Html.h2 [] [ Html.text "Packages" ]
                 , Html.p []
                     [ Html.text "Explore and publish libraries with the "
                     , Html.a [ Attr.href "https://package.guida-lang.org" ] [ Html.text "Guida package registry" ]

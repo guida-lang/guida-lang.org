@@ -7,6 +7,7 @@ module Main exposing
     )
 
 import Browser
+import Browser.Dom
 import Browser.Events
 import Browser.Navigation as Nav
 import Components.ThemeToggle as ThemeToggle
@@ -16,8 +17,9 @@ import Page.Examples as Examples
 import Page.Home as Home
 import Page.NotFound as NotFound
 import Page.Try as Try
-import Route exposing (Route)
+import Route
 import Session exposing (Session)
+import Task
 import Url exposing (Url)
 
 
@@ -52,7 +54,7 @@ init flags url navKey =
                 _ ->
                     ThemeToggle.Light
     in
-    changeRouteTo (Route.fromUrl url)
+    changeRouteTo url
         { session = Session.init flags.year theme navKey
         , currentPage = NotFound
         }
@@ -62,36 +64,52 @@ init flags url navKey =
 -- UPDATE
 
 
-changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
-changeRouteTo maybeRoute model =
-    case maybeRoute of
-        Nothing ->
-            ( { model | currentPage = NotFound }, Cmd.none )
+changeRouteTo : Url -> Model -> ( Model, Cmd Msg )
+changeRouteTo url model =
+    let
+        ( updatedModel, cmd ) =
+            case Route.fromUrl url of
+                Nothing ->
+                    ( { model | currentPage = NotFound }, Cmd.none )
 
-        Just Route.Home ->
-            ( { model | currentPage = Home }, Cmd.none )
+                Just Route.Home ->
+                    ( { model | currentPage = Home }, Cmd.none )
 
-        Just (Route.Docs subRoute) ->
-            Docs.init subRoute
-                |> updateWith Docs identity model
+                Just (Route.Docs subRoute) ->
+                    Docs.init subRoute
+                        |> updateWith Docs identity model
 
-        Just Route.Community ->
-            ( { model | currentPage = Community }, Cmd.none )
+                Just Route.Community ->
+                    ( { model | currentPage = Community }, Cmd.none )
 
-        Just Route.Examples ->
-            ( { model | currentPage = Examples }, Cmd.none )
+                Just Route.Examples ->
+                    ( { model | currentPage = Examples }, Cmd.none )
 
-        Just (Route.Example example) ->
-            Try.init (Just example)
-                |> updateWith Try TryMsg model
+                Just (Route.Example example) ->
+                    Try.init (Just example)
+                        |> updateWith Try TryMsg model
 
-        Just Route.Try ->
-            Try.init Nothing
-                |> updateWith Try TryMsg model
+                Just Route.Try ->
+                    Try.init Nothing
+                        |> updateWith Try TryMsg model
+
+        scrollToFragment : Cmd Msg
+        scrollToFragment =
+            case url.fragment of
+                Just fragment ->
+                    Browser.Dom.getElement fragment
+                        |> Task.andThen (\{ element } -> Browser.Dom.setViewport 0 (element.y - 96))
+                        |> Task.attempt (\_ -> NoOp)
+
+                Nothing ->
+                    Task.attempt (\_ -> NoOp) (Browser.Dom.setViewport 0 0)
+    in
+    ( updatedModel, Cmd.batch [ cmd, scrollToFragment ] )
 
 
 type Msg
-    = ChangedUrl Url
+    = NoOp
+    | ChangedUrl Url
     | ClickedLink Browser.UrlRequest
       -- SESSION
     | SessionMsg Session.Msg
@@ -102,8 +120,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case ( msg, model.currentPage ) of
+        ( NoOp, _ ) ->
+            ( model, Cmd.none )
+
         ( ChangedUrl url, _ ) ->
-            changeRouteTo (Route.fromUrl url) model
+            changeRouteTo url model
 
         ( ClickedLink urlRequest, _ ) ->
             case urlRequest of

@@ -23,11 +23,31 @@ type Route
 
 type DocumentationSection
     = Introduction
-    | Syntax
-    | FromJavaScriptOrElm
-    | GuidaJson
-    | Records
-    | Interop
+    | WhatIsGuida
+    | Installation
+    | YourFirstProgram
+    | ProjectSetup
+    | MigrationFromElm
+    | SyntaxOverview
+    | ValuesAndTypes
+    | FunctionsAndExpressions
+    | ModulesAndImports
+    | CustomTypes
+    | PatternMatching
+    | ErrorHandling
+    | ImmutabilityAndPurity
+    | TheTypeSystem
+    | ConcurrencyAndEffects
+    | StateAndArchitecture
+    | ApplicationStructure
+    | TheGuidaArchitecture
+    | RoutingAndNavigation
+    | Interoperability
+    | ContributingGettingStarted
+    | ContributingWaysToContribute
+    | ContributingDevelopmentWorkflow
+    | ContributingReportingIssues
+    | ContributingJoinTheCommunity
     | Commands Command
     | Hints Hint
 
@@ -52,13 +72,12 @@ type Hint
     | ImplicitCasts
     | ImportCycles
     | Imports
-    | InfiniteType
+    | InfiniteTypes
     | MissingPatterns
     | Optimize
     | PortModules
     | RecursiveAlias
     | Shadowing
-    | Tuples
     | TypeAnnotations
 
 
@@ -181,15 +200,53 @@ parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
         [ Parser.map Home Parser.top
+
+        -- DOCS: Overview
         , Parser.map (Docs Introduction) (Parser.s "docs")
-        , Parser.map (Docs Syntax) (Parser.s "docs" </> Parser.s "syntax")
-        , Parser.map (Docs FromJavaScriptOrElm) (Parser.s "docs" </> Parser.s "from-javascript-or-elm")
-        , Parser.map (Docs GuidaJson) (Parser.s "docs" </> Parser.s "guida-json")
-        , Parser.map (Docs Records) (Parser.s "docs" </> Parser.s "records")
-        , Parser.map (Docs Interop) (Parser.s "docs" </> Parser.s "interop")
+        , Parser.map (Docs WhatIsGuida) (Parser.s "docs" </> Parser.s "what-is-guida")
+
+        -- DOCS: Getting Started
+        , Parser.map (Docs Installation) (Parser.s "docs" </> Parser.s "installation")
+        , Parser.map (Docs YourFirstProgram) (Parser.s "docs" </> Parser.s "your-first-program")
+        , Parser.map (Docs ProjectSetup) (Parser.s "docs" </> Parser.s "project-setup")
+        , Parser.map (Docs MigrationFromElm) (Parser.s "docs" </> Parser.s "migration-from-elm")
+
+        -- DOCS: The Language
+        , Parser.map (Docs SyntaxOverview) (Parser.s "docs" </> Parser.s "syntax-overview")
+        , Parser.map (Docs ValuesAndTypes) (Parser.s "docs" </> Parser.s "values-and-types")
+        , Parser.map (Docs FunctionsAndExpressions) (Parser.s "docs" </> Parser.s "functions-and-expressions")
+        , Parser.map (Docs ModulesAndImports) (Parser.s "docs" </> Parser.s "modules-and-imports")
+        , Parser.map (Docs CustomTypes) (Parser.s "docs" </> Parser.s "custom-types")
+        , Parser.map (Docs PatternMatching) (Parser.s "docs" </> Parser.s "pattern-matching")
+        , Parser.map (Docs ErrorHandling) (Parser.s "docs" </> Parser.s "error-handling")
+
+        -- DOCS: Core Concepts
+        , Parser.map (Docs ImmutabilityAndPurity) (Parser.s "docs" </> Parser.s "immutability-and-purity")
+        , Parser.map (Docs TheTypeSystem) (Parser.s "docs" </> Parser.s "the-type-system")
+        , Parser.map (Docs ConcurrencyAndEffects) (Parser.s "docs" </> Parser.s "concurrency-and-effects")
+        , Parser.map (Docs StateAndArchitecture) (Parser.s "docs" </> Parser.s "state-and-architecture")
+
+        -- DOCS: Building Applications
+        , Parser.map (Docs ApplicationStructure) (Parser.s "docs" </> Parser.s "application-structure")
+        , Parser.map (Docs TheGuidaArchitecture) (Parser.s "docs" </> Parser.s "the-guida-architecture")
+        , Parser.map (Docs RoutingAndNavigation) (Parser.s "docs" </> Parser.s "routing-and-navigation")
+        , Parser.map (Docs Interoperability) (Parser.s "docs" </> Parser.s "interoperability")
+
+        -- DOCS: Contributing
+        , Parser.map (Docs ContributingGettingStarted) (Parser.s "docs" </> Parser.s "contributing" </> Parser.s "getting-started")
+        , Parser.map (Docs ContributingWaysToContribute) (Parser.s "docs" </> Parser.s "contributing" </> Parser.s "ways-to-contribute")
+        , Parser.map (Docs ContributingDevelopmentWorkflow) (Parser.s "docs" </> Parser.s "contributing" </> Parser.s "development-workflow")
+        , Parser.map (Docs ContributingReportingIssues) (Parser.s "docs" </> Parser.s "contributing" </> Parser.s "reporting-issues")
+        , Parser.map (Docs ContributingJoinTheCommunity) (Parser.s "docs" </> Parser.s "contributing" </> Parser.s "join-the-community")
+
+        --
         , Parser.map (Docs << Commands) (Parser.s "docs" </> Parser.s "1.0.0" </> Parser.s "commands" </> commandParser)
         , Parser.map (Docs << Hints) (Parser.s "docs" </> Parser.s "1.0.0" </> Parser.s "hints" </> hintParser)
+
+        -- COMMUNITY
         , Parser.map Community (Parser.s "community")
+
+        -- EXAMPLES
         , Parser.map Examples (Parser.s "examples")
         , Parser.map (Example Animation) (Parser.s "examples" </> Parser.s "animation")
         , Parser.map (Example Book) (Parser.s "examples" </> Parser.s "book")
@@ -247,13 +304,12 @@ hintParser =
         , Parser.map ImplicitCasts (Parser.s "implicit-casts")
         , Parser.map ImportCycles (Parser.s "import-cycles")
         , Parser.map Imports (Parser.s "imports")
-        , Parser.map InfiniteType (Parser.s "infinite-type")
+        , Parser.map InfiniteTypes (Parser.s "infinite-types")
         , Parser.map MissingPatterns (Parser.s "missing-patterns")
         , Parser.map Optimize (Parser.s "optimize")
         , Parser.map PortModules (Parser.s "port-modules")
         , Parser.map RecursiveAlias (Parser.s "recursive-alias")
         , Parser.map Shadowing (Parser.s "shadowing")
-        , Parser.map Tuples (Parser.s "tuples")
         , Parser.map TypeAnnotations (Parser.s "type-annotations")
         ]
 

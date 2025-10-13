@@ -92,7 +92,7 @@ view : Session -> (Session.Msg -> msg) -> Browser.Document msg
 view session toSessionMsg =
     { title = "Guida: Examples"
     , body =
-        Layout.view { sidebarNavigation = [] } session toSessionMsg <|
+        Layout.view { sidebarNavigation = [], currentRoute = [] } session toSessionMsg <|
             [ Html.h1 [] [ Html.text "Examples" ]
             , Html.div [ Attr.class "not-prose mt-4 grid grid-cols-1 gap-8 border-t border-zinc-900/5 pt-10 sm:grid-cols-2 lg:grid-cols-4 dark:border-white/5" ]
                 (List.map exampleView examples)

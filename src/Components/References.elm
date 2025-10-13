@@ -10,7 +10,7 @@ view : List String -> Html msg
 view links =
     Html.div [ Attr.class "my-6" ]
         [ Html.hr [] []
-        , Html.h2 [ Attr.class "scroll-mt-24" ] [ Html.text "References" ]
+        , Html.h2 [] [ Html.text "References" ]
         , Html.ul [ Aria.role "list" ]
             (List.map linkView links)
         ]

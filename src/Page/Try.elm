@@ -263,74 +263,77 @@ view session toSessionMsg toMsg model =
                         [ Button.view Button.Button Button.Primary Nothing [ Events.onClick (toMsg Rebuild) ] [ Html.text "rebuild" ]
                         ]
                     ]
-                , Html.main_ [ Attr.class "overflow-y-auto bg-white" ] (outputView toMsg model)
+                , outputView toMsg model
                 ]
             ]
     }
 
 
-outputView : (Msg -> msg) -> Model -> List (Html msg)
+outputView : (Msg -> msg) -> Model -> Html msg
 outputView toMsg model =
     case ( model.example, model.maybeResult ) of
         ( Nothing, Nothing ) ->
-            [ Html.div [ Attr.class "flex h-full" ]
-                [ Html.div [ Attr.class "m-auto w-sm items-center" ]
-                    [ Html.div
-                        [ Attr.class "my-4 group relative flex rounded-2xl bg-zinc-50 transition-shadow hover:shadow-md hover:shadow-zinc-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5"
-                        , Events.on "mouseover" (Decode.map3 (\rectangle clientX clientY -> toMsg (OnMouseOver rectangle clientX clientY)) (DOM.currentTarget DOM.boundingClientRect) (Decode.field "clientX" Decode.int) (Decode.field "clientY" Decode.int))
-                        ]
-                        [ ResourcePattern.view { mouseX = model.mouseX, mouseY = model.mouseY }
-                        , Html.div [ Attr.class "absolute inset-0 rounded-2xl ring-1 ring-zinc-900/7.5 ring-inset group-hover:ring-zinc-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" ] []
-                        , Html.div [ Attr.class "relative rounded-2xl px-4 pt-8 pb-4" ]
-                            [ Html.h2 [ Attr.class "mt-4 text-sm/7 font-semibold text-zinc-900 dark:text-white" ]
-                                [ Html.text "Online Editor" ]
-                            , Html.p [ Attr.class "mt-1 text-sm text-zinc-600 dark:text-zinc-400" ]
-                                [ Html.text "Write and compile code online!" ]
-                            , Html.ul []
-                                [ Html.li []
-                                    [ Button.view (Button.Link "/examples/hello") Button.Text Nothing [] [ Html.text "Hello World!" ]
+            Html.main_ [ Attr.class "overflow-y-auto" ]
+                [ Html.div [ Attr.class "flex h-full" ]
+                    [ Html.div [ Attr.class "m-auto w-sm items-center" ]
+                        [ Html.div
+                            [ Attr.class "my-4 group relative flex rounded-2xl bg-zinc-50 transition-shadow hover:shadow-md hover:shadow-zinc-900/5 dark:bg-white/2.5 dark:hover:shadow-black/5"
+                            , Events.on "mouseover" (Decode.map3 (\rectangle clientX clientY -> toMsg (OnMouseOver rectangle clientX clientY)) (DOM.currentTarget DOM.boundingClientRect) (Decode.field "clientX" Decode.int) (Decode.field "clientY" Decode.int))
+                            ]
+                            [ ResourcePattern.view { mouseX = model.mouseX, mouseY = model.mouseY }
+                            , Html.div [ Attr.class "absolute inset-0 rounded-2xl ring-1 ring-zinc-900/7.5 ring-inset group-hover:ring-zinc-900/10 dark:ring-white/10 dark:group-hover:ring-white/20" ] []
+                            , Html.div [ Attr.class "relative rounded-2xl px-4 pt-8 pb-4" ]
+                                [ Html.h2 [ Attr.class "mt-4 text-sm/7 font-semibold text-zinc-900 dark:text-white" ]
+                                    [ Html.text "Online Editor" ]
+                                , Html.p [ Attr.class "mt-1 text-sm text-zinc-600 dark:text-zinc-400" ]
+                                    [ Html.text "Write and compile code online!" ]
+                                , Html.ul []
+                                    [ Html.li []
+                                        [ Button.view (Button.Link "/examples/hello") Button.Text Nothing [] [ Html.text "Hello World!" ]
+                                        ]
+                                    , Html.li []
+                                        [ Button.view (Button.Link "/examples/buttons") Button.Text Nothing [] [ Html.text "Buttons" ]
+                                        ]
+                                    , Html.li []
+                                        [ Button.view (Button.Link "/examples/clock") Button.Text Nothing [] [ Html.text "Clock" ]
+                                        ]
+                                    , Html.li []
+                                        [ Button.view (Button.Link "/examples/quotes") Button.Text Nothing [] [ Html.text "HTTP" ]
+                                        ]
+                                    , Html.li []
+                                        [ Button.view (Button.Link "/examples/cards") Button.Text Nothing [] [ Html.text "Cards" ]
+                                        ]
+                                    , Html.li []
+                                        [ Button.view (Button.Link "/examples") Button.Text Nothing [] [ Html.text "More!" ]
+                                        ]
                                     ]
-                                , Html.li []
-                                    [ Button.view (Button.Link "/examples/buttons") Button.Text Nothing [] [ Html.text "Buttons" ]
+                                , Html.p [ Attr.class "mt-1 text-sm text-zinc-600 dark:text-zinc-400" ]
+                                    [ Html.text "Explore the "
+                                    , Button.view (Button.Link "/docs") Button.Text Nothing [] [ Html.text "official documentation" ]
+                                    , Html.text " to learn how to get started with Guida."
                                     ]
-                                , Html.li []
-                                    [ Button.view (Button.Link "/examples/clock") Button.Text Nothing [] [ Html.text "Clock" ]
-                                    ]
-                                , Html.li []
-                                    [ Button.view (Button.Link "/examples/quotes") Button.Text Nothing [] [ Html.text "HTTP" ]
-                                    ]
-                                , Html.li []
-                                    [ Button.view (Button.Link "/examples/cards") Button.Text Nothing [] [ Html.text "Cards" ]
-                                    ]
-                                , Html.li []
-                                    [ Button.view (Button.Link "/examples") Button.Text Nothing [] [ Html.text "More!" ]
-                                    ]
-                                ]
-                            , Html.p [ Attr.class "mt-1 text-sm text-zinc-600 dark:text-zinc-400" ]
-                                [ Html.text "Explore the "
-                                , Button.view (Button.Link "/docs") Button.Text Nothing [] [ Html.text "official documentation" ]
-                                , Html.text " to learn how to get started with Guida."
                                 ]
                             ]
                         ]
                     ]
                 ]
-            ]
 
         ( Just _, Nothing ) ->
-            []
+            Html.main_ [ Attr.class "overflow-y-auto" ] []
 
         ( _, Just (Ok output) ) ->
-            [ Html.iframe
-                [ Attr.class "h-full w-full"
-                , Attr.srcdoc output
+            Html.main_ [ Attr.class "overflow-y-auto bg-white" ]
+                [ Html.iframe
+                    [ Attr.class "h-full w-full"
+                    , Attr.srcdoc output
+                    ]
+                    []
                 ]
-                []
-            ]
 
         ( _, Just (Err error) ) ->
-            [ Errors.viewError error
-            ]
+            Html.main_ [ Attr.class "overflow-y-auto bg-white" ]
+                [ Errors.viewError error
+                ]
 
 
 

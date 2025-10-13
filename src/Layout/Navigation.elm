@@ -2,6 +2,7 @@ module Layout.Navigation exposing
     ( Navigation
     , NavigationGroup
     , NavigationLink
+    , NavigationSection
     , view
     )
 
@@ -12,29 +13,37 @@ import Html.Attributes.Aria as Aria
 import Layout.Global as Global
 
 
-type alias Navigation =
-    List NavigationGroup
+type alias Navigation route =
+    List (NavigationGroup route)
 
 
-type alias NavigationGroup =
+type alias NavigationGroup route =
     { title : String
-    , links : List NavigationLink
+    , links : List (NavigationLink route)
     }
 
 
-type alias NavigationLink =
+type alias NavigationLink route =
     { title : String
     , href : String
-    , active : Bool
+    , route : route
+    , sections : List (NavigationSection route)
     }
 
 
-view : List (Html.Attribute msg) -> Navigation -> Html msg
-view attrs navigation =
+type alias NavigationSection route =
+    { title : String
+    , href : String
+    , route : route
+    }
+
+
+view : List (Html.Attribute msg) -> route -> Navigation route -> Html msg
+view attrs currentRoute navigation =
     Html.nav attrs
         [ Html.ul [ Aria.role "list" ]
             (List.map topLevelNavItem Global.topLevelNavItems
-                ++ List.indexedMap navigationGroupView navigation
+                ++ List.indexedMap (navigationGroupView currentRoute) navigation
             )
         ]
 
@@ -50,8 +59,8 @@ topLevelNavItem { href, children } =
         ]
 
 
-navigationGroupView : Int -> NavigationGroup -> Html msg
-navigationGroupView groupIndex navigationGroup =
+navigationGroupView : route -> Int -> NavigationGroup route -> Html msg
+navigationGroupView currentRoute groupIndex navigationGroup =
     Html.li
         [ Attr.classList
             [ ( "relative mt-6", True )
@@ -59,42 +68,80 @@ navigationGroupView groupIndex navigationGroup =
             ]
         ]
         [ Html.h2 [ Attr.class "text-xs font-semibold text-zinc-900 dark:text-white" ]
-            [ Html.text navigationGroup.title
+            [ Html.text (String.fromInt groupIndex ++ ". " ++ navigationGroup.title)
             ]
         , Html.div [ Attr.class "relative mt-3 pl-2" ]
             (Html.div [ Attr.class "absolute inset-y-0 left-2 w-px bg-zinc-900/10 dark:bg-white/5" ] []
-                :: activePageMarker navigationGroup
+                :: activePageMarker currentRoute navigationGroup
                 ++ [ Html.ul [ Aria.role "list", Attr.class "border-l border-transparent" ]
-                        (List.map navigationLinkView navigationGroup.links)
+                        (List.map (navigationLinkView currentRoute) navigationGroup.links)
                    ]
             )
         ]
 
 
-navigationLinkView : NavigationLink -> Html msg
-navigationLinkView navigationLink =
+navigationLinkView : route -> NavigationLink route -> Html msg
+navigationLinkView currentRoute navigationLink =
+    let
+        sections : List (Html msg)
+        sections =
+            case navigationLink.sections of
+                [] ->
+                    []
+
+                _ ->
+                    [ Html.ul [ Aria.role "list" ]
+                        (List.map (navigationSectionView currentRoute) navigationLink.sections)
+                    ]
+
+        active : Bool
+        active =
+            navigationLink.route == currentRoute
+    in
     Html.li [ Attr.class "relative" ]
-        [ Link.view
+        (Link.view
             [ Attr.href navigationLink.href
             , Attr.classList
-                [ ( "flex justify-between gap-2 py-1 pr-3 text-sm transition", True )
-                , ( "pl-4", True )
-                , ( "text-zinc-900 dark:text-white", navigationLink.active )
-                , ( "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white", not navigationLink.active )
+                [ ( "flex justify-between gap-2 py-1 pr-3 text-sm transition pl-4", True )
+                , ( "text-zinc-900 dark:text-white", active )
+                , ( "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white", not active )
                 ]
             ]
             [ Html.text navigationLink.title
             ]
+            :: sections
+        )
+
+
+navigationSectionView : route -> NavigationSection route -> Html msg
+navigationSectionView currentRoute section =
+    let
+        active : Bool
+        active =
+            section.route == currentRoute
+    in
+    Html.li []
+        [ Link.view
+            [ Attr.href section.href
+            , Attr.classList
+                [ ( "flex justify-between gap-2 py-1 pr-3 text-sm transition pl-7", True )
+                , ( "text-zinc-900 dark:text-white", active )
+                , ( "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white", not active )
+                ]
+            ]
+            [ Html.text section.title
+            ]
         ]
 
 
-activePageMarker : NavigationGroup -> List (Html msg)
-activePageMarker group =
+activePageMarker : route -> NavigationGroup route -> List (Html msg)
+activePageMarker currentRoute group =
     let
         maybeActivePageIndex : Maybe Int
         maybeActivePageIndex =
-            List.indexedMap Tuple.pair group.links
-                |> List.filter (\( _, link ) -> link.active)
+            List.concatMap (\link -> link.route :: List.map .route link.sections) group.links
+                |> List.indexedMap Tuple.pair
+                |> List.filter (\( _, route ) -> route == currentRoute)
                 |> List.head
                 |> Maybe.map Tuple.first
     in

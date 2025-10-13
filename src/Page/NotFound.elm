@@ -17,7 +17,7 @@ view : Session -> (Session.Msg -> msg) -> Browser.Document msg
 view session toSessionMsg =
     { title = "Guida: Page not found"
     , body =
-        Layout.view { sidebarNavigation = [] } session toSessionMsg <|
+        Layout.view { sidebarNavigation = [], currentRoute = () } session toSessionMsg <|
             [ HeroPattern.view
             , Html.div [ Attr.class "mx-auto flex h-full max-w-xl flex-col items-center justify-center py-16 text-center" ]
                 [ Html.p [ Attr.class "text-sm font-semibold text-zinc-900 dark:text-white" ] [ Html.text "404" ]
