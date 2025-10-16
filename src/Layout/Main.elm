@@ -130,25 +130,24 @@ view config session toSessionMsg children =
     ]
 
 
-fullscreenView : Session -> (Session.Msg -> msg) -> List (Html msg) -> List (Html msg)
-fullscreenView session toSessionMsg children =
+fullscreenView : Session -> (Session.Msg -> msg) -> Html msg -> List (Html msg) -> List (Html msg)
+fullscreenView session toSessionMsg packagesDialogView children =
     let
         config : Config ()
         config =
             { sidebarNavigation = [], currentRoute = () }
     in
     [ Html.div [ Attr.class "contents" ]
-        [ Html.div [ Attr.class "w-full" ]
-            [ Html.div [ Attr.class "h-full" ]
+        [ Html.div [ Attr.class "w-screen" ]
+            [ Html.div [ Attr.class "h-screen" ]
                 [ Html.header [ Attr.class "contents lg:pointer-events-none lg:fixed lg:inset-0 lg:z-40 lg:flex" ]
                     [ sidebarView config session toSessionMsg
                     ]
                 , Html.div [ Attr.class "relative flex h-full flex-col pt-14" ]
-                    [ Html.main_ [ Attr.class "flex-auto prose dark:prose-invert" ]
-                        children
-                    ]
+                    children
                 ]
             ]
         ]
+    , packagesDialogView
     , dialogView config session toSessionMsg
     ]

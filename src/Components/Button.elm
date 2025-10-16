@@ -74,7 +74,7 @@ view type_ variant maybeArrow attrs children =
         classAttrs : List (Html.Attribute msg)
         classAttrs =
             [ Attr.classList
-                [ ( "inline-flex gap-0.5 justify-center overflow-hidden text-sm font-medium transition", True )
+                [ ( "inline-flex gap-0.5 items-center justify-center overflow-hidden text-sm font-medium transition", True )
                 , ( variantStyles variant, True )
                 ]
             ]

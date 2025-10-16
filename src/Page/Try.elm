@@ -17,13 +17,16 @@ import Elm.Error
 import Errors
 import Html exposing (Html)
 import Html.Attributes as Attr
+import Html.Attributes.Aria as Aria
 import Html.Events as Events
 import Http
+import Icon
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Layout.Main as Layout
 import Route
 import Session exposing (Session)
+import Svg.Attributes as SvgAttr
 
 
 port setEditorContentAndRebuild : String -> Cmd msg
@@ -71,15 +74,18 @@ init maybeExample =
       , mouseX = 0
       , mouseY = 0
       }
-    , case maybeExample of
-        Just example ->
-            Http.get
-                { url = "/example-files/" ++ Route.exampleSrc example ++ ".guida"
-                , expect = Http.expectString GotExampleContent
-                }
+    , Cmd.batch
+        [ case maybeExample of
+            Just example ->
+                Http.get
+                    { url = "/example-files/" ++ Route.exampleSrc example ++ ".guida"
+                    , expect = Http.expectString GotExampleContent
+                    }
 
-        Nothing ->
-            Cmd.none
+            Nothing ->
+                Cmd.none
+        , registryFetch
+        ]
     )
 
 
@@ -93,6 +99,7 @@ type Msg
     | Rebuild
     | RebuildResult Encode.Value
     | OnMouseOver DOM.Rectangle Int Int
+    | GotRegistry (Result Http.Error (List Package))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -127,6 +134,19 @@ update msg model =
 
         OnMouseOver { left, top } clientX clientY ->
             ( { model | mouseX = clientX - round left, mouseY = clientY - round top }, Cmd.none )
+
+        GotRegistry (Ok news) ->
+            ( { model
+                | registry =
+                    registryInitialWithDefaults model.defaultDirect model.defaultIndirect
+                        |> registryFromNews news
+                        |> Fetched.Success
+              }
+            , Cmd.none
+            )
+
+        GotRegistry (Err ((Http.BadBody errMsg) as err)) ->
+            ( { model | registry = Fetched.Failed err }, Cmd.none )
 
 
 decodeResult : Decode.Decoder (Result Elm.Error.Error String)
@@ -238,10 +258,10 @@ view session toSessionMsg toMsg model =
             Nothing ->
                 "Try Guida!"
     , body =
-        Layout.fullscreenView session toSessionMsg <|
-            [ Html.section [ Attr.class "h-full grid grid-cols-none grid-rows-2 sm:grid-cols-2 sm:grid-rows-none" ]
-                [ Html.aside
-                    [ Attr.class "grid grid-cols-none grid-rows-2 overflow-y-hidden border-b sm:border-b-0 sm:border-r border-gray-200"
+        Layout.fullscreenView session toSessionMsg packagesDialogView <|
+            [ Html.section [ Attr.class "flex flex-col h-min-full md:h-full md:grid md:grid-cols-2 md:grid-rows-[1fr_min-content]" ]
+                [ Html.div
+                    [ Attr.class "h-full overflow-auto border-b md:border-b-0 md:border-r border-gray-200"
                     ]
                     [ Html.node "wc-codemirror"
                         [ Attr.id "editor"
@@ -259,14 +279,184 @@ view session toSessionMsg toMsg model =
                         [ Html.node "link" [ Attr.rel "stylesheet", Attr.href "/codemirror/theme/xq-dark.css" ] []
                         , Html.node "link" [ Attr.rel "stylesheet", Attr.href "/codemirror/theme/xq-light.css" ] []
                         ]
-                    , Html.div []
-                        [ Button.view Button.Button Button.Primary Nothing [ Events.onClick (toMsg Rebuild) ] [ Html.text "rebuild" ]
+                    ]
+                , Html.div [ Attr.class "flex  justify-between col-start-1 row-start-2 border-gray-200 border-b md:border-b-0 md:border-r md:border-t" ]
+                    [ Html.aside []
+                        [ Html.ul [ Aria.role "list", Attr.class "flex items-center gap-6" ]
+                            [ Html.li []
+                                [ Html.button
+                                    [ Attr.class "flex gap-0.5 items-center py-0.5 px-2 text-sm/7 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                                    , Events.onClick (toMsg Rebuild)
+                                    ]
+                                    [ Html.text "Packages"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    , Html.aside []
+                        [ Html.ul [ Aria.role "list", Attr.class "flex items-center gap-6" ]
+                            [ Html.li [] [ rebuildButton toMsg model ]
+                            ]
                         ]
                     ]
                 , outputView toMsg model
                 ]
             ]
     }
+
+
+packagesDialogView : Html msg
+packagesDialogView =
+    let
+        openAttrs : List (Html.Attribute msg)
+        openAttrs =
+            if True then
+                [ Attr.attribute "open" "true" ]
+
+            else
+                []
+    in
+    Html.node "dialog"
+        (Attr.class "fixed inset-0 z-50"
+            :: openAttrs
+        )
+        [ Html.div
+            [ Attr.class "fixed inset-0 top-14 bg-zinc-400/20 backdrop-blur-xs data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-black/40"
+
+            -- , Events.onClick (toSessionMsg Session.ToggleMobileNavigation)
+            ]
+            []
+        , Html.div [ Attr.class "fixed top-0 bottom-0 left-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 ring-1 shadow-lg shadow-zinc-900/10 ring-zinc-900/7.5 duration-500 ease-in-out data-closed:-translate-x-full min-[416px]:max-w-sm sm:px-6 sm:pb-10 dark:bg-zinc-900 dark:ring-zinc-800" ]
+            [ Html.nav
+                [ Attr.class "relative flex flex-1 flex-col"
+                ]
+                [ Html.ul [ Aria.role "list", Attr.class "flex flex-1 flex-col gap-y-4" ]
+                    [ Html.li []
+                        [ Html.div
+                            [ Attr.class "text-xs/6 font-semibold text-gray-400"
+                            ]
+                            [ Html.text "Installed" ]
+                        , Html.ul
+                            [ Aria.role "list"
+                            , Attr.class "mt-2 space-y-1"
+                            ]
+                            [ Html.li
+                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                                ]
+                                [ Html.span
+                                    [ Attr.class "truncate"
+                                    ]
+                                    [ Html.text "elm/random" ]
+                                , Html.div [ Attr.class "flex gap-x-3" ]
+                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+                                        [ Html.text "2.0.1" ]
+                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.lockClosed [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    , Html.li []
+                        [ Html.div
+                            [ Attr.class "text-xs/6 font-semibold text-gray-400"
+                            ]
+                            [ Html.text "Registry" ]
+                        , Html.input
+                            [ Attr.class "mt-2 block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+                            , Attr.type_ "search"
+                            , Attr.id "registry-search"
+                            , Attr.placeholder "Search"
+                            , Aria.ariaLabel "Search"
+                            ]
+                            []
+                        , Html.ul
+                            [ Aria.role "list"
+                            , Attr.class "mt-2 space-y-1"
+                            ]
+                            [ Html.li
+                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                                ]
+                                [ Html.span
+                                    [ Attr.class "truncate"
+                                    ]
+                                    [ Html.text "elm/html" ]
+                                , Html.div [ Attr.class "flex gap-x-3" ]
+                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+                                        [ Html.text "1.0.0" ]
+                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.plus [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+                                    ]
+                                ]
+                            , Html.li
+                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                                ]
+                                [ Html.span
+                                    [ Attr.class "truncate"
+                                    ]
+                                    [ Html.text "elm/random" ]
+                                , Html.div [ Attr.class "flex gap-x-3" ]
+                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+                                        [ Html.text "2.0.1" ]
+                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.trash [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+                                    ]
+                                ]
+                            , Html.li
+                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                                ]
+                                [ Html.span
+                                    [ Attr.class "truncate"
+                                    ]
+                                    [ Html.text "elm/random" ]
+                                , Html.div [ Attr.class "flex gap-x-3" ]
+                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+                                        [ Html.text "2.0.1" ]
+                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.lockClosed [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+
+rebuildButton : (Msg -> msg) -> Model -> Html msg
+rebuildButton toMsg model =
+    case model.status of
+        NotAsked ->
+            Html.button
+                [ Attr.class "flex gap-0.5 items-center py-0.5 px-2 text-sm/7 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                , Events.onClick (toMsg Rebuild)
+                ]
+                [ Icon.arrowPath [ SvgAttr.class "h-5 w-5" ]
+                , Html.text "Rebuild"
+                ]
+
+        Compiling ->
+            Html.button
+                [ Attr.class "flex gap-0.5 items-center py-0.5 px-2 text-sm/7 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                , Attr.disabled True
+                ]
+                [ Icon.arrowPath [ SvgAttr.class "h-5 w-5 animate-spin" ]
+                , Html.text "Compiling..."
+                ]
+
+        Success ->
+            Html.button
+                [ Attr.class "flex gap-0.5 items-center py-0.5 px-2 text-sm/7 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                , Events.onClick (toMsg Rebuild)
+                ]
+                [ Icon.check [ SvgAttr.class "h-5 w-5 text-green-600" ]
+                , Html.text "Success"
+                ]
+
+        ProblemsFound ->
+            Html.button
+                [ Attr.class "flex gap-0.5 items-center py-0.5 px-2 text-sm/7 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                , Events.onClick (toMsg Rebuild)
+                ]
+                [ Icon.xMark [ SvgAttr.class "h-5 w-5 text-red-600" ]
+                , Html.text "Problems found"
+                ]
 
 
 outputView : (Msg -> msg) -> Model -> Html msg
@@ -322,7 +512,7 @@ outputView toMsg model =
             Html.main_ [ Attr.class "overflow-y-auto" ] []
 
         ( _, Just (Ok output) ) ->
-            Html.main_ [ Attr.class "overflow-y-auto bg-white" ]
+            Html.main_ [ Attr.class "row-span-2 overflow-y-auto bg-white" ]
                 [ Html.iframe
                     [ Attr.class "h-full w-full"
                     , Attr.srcdoc output
@@ -334,44 +524,3 @@ outputView toMsg model =
             Html.main_ [ Attr.class "overflow-y-auto bg-white" ]
                 [ Errors.viewError error
                 ]
-
-
-
--- headerMode : Model -> Layout.Header.Mode Msg
--- headerMode model =
---     Layout.Header.Custom (Just (rebuildButton model)) [] []
--- rebuildButton : Model -> Layout.Header.Item Msg
--- rebuildButton model =
---     case model.status of
---         NotAsked ->
---             Layout.Header.Button
---                 { label =
---                     [ Icon.arrowPath [ SvgAttr.class "-ml-0.5 size-5" ]
---                     , Html.text "Rebuild"
---                     ]
---                 , msg = Layout.Header.Enabled Rebuild
---                 }
---         Compiling ->
---             Layout.Header.Button
---                 { label =
---                     [ Icon.arrowPath [ SvgAttr.class "-ml-0.5 size-5 animate-spin" ]
---                     , Html.text "Compiling..."
---                     ]
---                 , msg = Layout.Header.Disabled
---                 }
---         Success ->
---             Layout.Header.Button
---                 { label =
---                     [ Icon.check [ SvgAttr.class "-ml-0.5 size-5" ]
---                     , Html.text "Success"
---                     ]
---                 , msg = Layout.Header.Enabled Rebuild
---                 }
---         ProblemsFound ->
---             Layout.Header.Button
---                 { label =
---                     [ Icon.xMark [ SvgAttr.class "-ml-0.5 size-5" ]
---                     , Html.text "Problems found"
---                     ]
---                 , msg = Layout.Header.Enabled Rebuild
---                 }
