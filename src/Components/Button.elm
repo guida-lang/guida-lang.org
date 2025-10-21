@@ -9,6 +9,7 @@ import Components.Link as Link
 import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Attributes.Aria as Aria
+import Html.Events as Events
 import Svg
 import Svg.Attributes as SvgAttr
 
@@ -31,8 +32,8 @@ arrowIcon attrs =
         ]
 
 
-type Type
-    = Button
+type Type msg
+    = Button msg
     | Link String
 
 
@@ -68,7 +69,7 @@ type Arrow
     | RightArrow
 
 
-view : Type -> Variant -> Maybe Arrow -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
+view : Type msg -> Variant -> Maybe Arrow -> List (Html.Attribute msg) -> List (Html msg) -> Html msg
 view type_ variant maybeArrow attrs children =
     let
         classAttrs : List (Html.Attribute msg)
@@ -122,8 +123,8 @@ view type_ variant maybeArrow attrs children =
                     children
     in
     case type_ of
-        Button ->
-            Html.button (classAttrs ++ attrs)
+        Button onClick ->
+            Html.button (classAttrs ++ Events.onClick onClick :: attrs)
                 inner
 
         Link href ->

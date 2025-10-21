@@ -2,6 +2,7 @@ module Icon exposing
     ( arrowPath
     , check
     , discord
+    , exclamationCircle
     , github
     , info
     , lockClosed
@@ -11,13 +12,12 @@ module Icon exposing
     , xMark
     )
 
-import Html
 import Html.Attributes.Aria as Aria
 import Svg exposing (Svg)
 import Svg.Attributes as SvgAttr
 
 
-arrowPath : List (Html.Attribute msg) -> Svg msg
+arrowPath : List (Svg.Attribute msg) -> Svg msg
 arrowPath attrs =
     Svg.svg
         (SvgAttr.fill "none"
@@ -36,7 +36,7 @@ arrowPath attrs =
         ]
 
 
-check : List (Html.Attribute msg) -> Svg msg
+check : List (Svg.Attribute msg) -> Svg msg
 check attrs =
     Svg.svg
         (SvgAttr.fill "none"
@@ -55,7 +55,7 @@ check attrs =
         ]
 
 
-github : List (Html.Attribute msg) -> Svg msg
+github : List (Svg.Attribute msg) -> Svg msg
 github attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 20 20"
@@ -71,7 +71,7 @@ github attrs =
         ]
 
 
-info : List (Html.Attribute msg) -> Svg msg
+info : List (Svg.Attribute msg) -> Svg msg
 info attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 16 16"
@@ -103,7 +103,7 @@ info attrs =
         ]
 
 
-discord : List (Html.Attribute msg) -> Svg msg
+discord : List (Svg.Attribute msg) -> Svg msg
 discord attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 20 20"
@@ -114,7 +114,25 @@ discord attrs =
         ]
 
 
-lockClosed : List (Html.Attribute msg) -> Svg msg
+exclamationCircle : List (Svg.Attribute msg) -> Svg msg
+exclamationCircle attrs =
+    Svg.svg
+        (SvgAttr.viewBox "0 0 24 24"
+            :: SvgAttr.fill "none"
+            :: SvgAttr.strokeWidth "1.5"
+            :: SvgAttr.stroke "currentColor"
+            :: attrs
+        )
+        [ Svg.path
+            [ SvgAttr.strokeLinecap "round"
+            , SvgAttr.strokeLinejoin "round"
+            , SvgAttr.d "M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+            ]
+            []
+        ]
+
+
+lockClosed : List (Svg.Attribute msg) -> Svg msg
 lockClosed attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 24 24"
@@ -132,7 +150,7 @@ lockClosed attrs =
         ]
 
 
-logo : List (Html.Attribute msg) -> Svg msg
+logo : List (Svg.Attribute msg) -> Svg msg
 logo attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 52.917 52.917"
@@ -147,7 +165,7 @@ logo attrs =
         ]
 
 
-plus : List (Html.Attribute msg) -> Svg msg
+plus : List (Svg.Attribute msg) -> Svg msg
 plus attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 24 24"
@@ -166,7 +184,7 @@ plus attrs =
         ]
 
 
-trash : List (Html.Attribute msg) -> Svg msg
+trash : List (Svg.Attribute msg) -> Svg msg
 trash attrs =
     Svg.svg
         (SvgAttr.viewBox "0 0 24 24"
@@ -185,7 +203,7 @@ trash attrs =
         ]
 
 
-xMark : List (Html.Attribute msg) -> Svg msg
+xMark : List (Svg.Attribute msg) -> Svg msg
 xMark attrs =
     Svg.svg
         (SvgAttr.fill "none"

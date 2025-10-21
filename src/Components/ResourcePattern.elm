@@ -21,10 +21,7 @@ view { mouseX, mouseY } =
                 , height = 56
                 , x = 28
                 , y = 16
-                , squares =
-                    [ ( 0, 1 )
-                    , ( 1, 3 )
-                    ]
+                , squares = []
                 }
             ]
         , Html.div
@@ -41,10 +38,7 @@ view { mouseX, mouseY } =
                 , height = 56
                 , x = 28
                 , y = 16
-                , squares =
-                    [ ( 0, 1 )
-                    , ( 1, 3 )
-                    ]
+                , squares = []
                 }
             ]
         ]

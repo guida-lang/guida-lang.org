@@ -13,6 +13,10 @@ import Components.Button as Button
 import Components.ResourcePattern as ResourcePattern
 import Components.ThemeToggle as ThemeToggle
 import DOM
+import Data.Examples as Examples exposing (Example)
+import Data.Registry.Defaults as Defaults
+import Data.Registry.Package exposing (Package)
+import Data.Version as V
 import Elm.Error
 import Errors
 import Html exposing (Html)
@@ -27,6 +31,7 @@ import Layout.Main as Layout
 import Route
 import Session exposing (Session)
 import Svg.Attributes as SvgAttr
+import Ui.Package
 
 
 port setEditorContentAndRebuild : String -> Cmd msg
@@ -43,12 +48,12 @@ port rebuildResult : (Encode.Value -> msg) -> Sub msg
 
 
 type alias Model =
-    { showPackages : Bool
-    , status : Status
+    { status : Status
     , maybeResult : Maybe (Result Elm.Error.Error String)
     , example : Maybe Route.Example
     , mouseX : Int
     , mouseY : Int
+    , packageUi : Ui.Package.Model
     }
 
 
@@ -61,8 +66,101 @@ type Status
 
 init : Maybe Route.Example -> ( Model, Cmd Msg )
 init maybeExample =
-    ( { showPackages = False
-      , status =
+    let
+        example : Example
+        example =
+            case maybeExample of
+                Just Route.Animation ->
+                    Examples.animation
+
+                Just Route.Book ->
+                    Examples.book
+
+                Just Route.Buttons ->
+                    Examples.buttons
+
+                Just Route.Cards ->
+                    Examples.cards
+
+                Just Route.Clock ->
+                    Examples.clock
+
+                Just Route.Crate ->
+                    Examples.crate
+
+                Just Route.Cube ->
+                    Examples.cube
+
+                Just Route.DragAndDrop ->
+                    Examples.dragAndDrop
+
+                Just Route.FirstPerson ->
+                    Examples.firstPerson
+
+                Just Route.Forms ->
+                    Examples.forms
+
+                Just Route.Groceries ->
+                    Examples.groceries
+
+                Just Route.Hello ->
+                    Examples.hello
+
+                Just Route.ImagePreviews ->
+                    Examples.imagePreviews
+
+                Just Route.Keyboard ->
+                    Examples.keyboard
+
+                Just Route.Mario ->
+                    Examples.mario
+
+                Just Route.Mouse ->
+                    Examples.mouse
+
+                Just Route.Numbers ->
+                    Examples.numbers
+
+                Just Route.Picture ->
+                    Examples.picture
+
+                Just Route.Positions ->
+                    Examples.positions
+
+                Just Route.Quotes ->
+                    Examples.quotes
+
+                Just Route.Shapes ->
+                    Examples.shapes
+
+                Just Route.TextFields ->
+                    Examples.textFields
+
+                Just Route.Thwomp ->
+                    Examples.thwomp
+
+                Just Route.Time ->
+                    Examples.time
+
+                Just Route.Triangle ->
+                    Examples.triangle
+
+                Just Route.Turtle ->
+                    Examples.turtle
+
+                Just Route.Upload ->
+                    Examples.upload
+
+                Nothing ->
+                    { direct = Defaults.direct
+                    , indirect = Defaults.indirect
+                    , content = ""
+                    }
+
+        ( packageUi, packageUiCmd ) =
+            Ui.Package.init example.direct example.indirect
+    in
+    ( { status =
             case maybeExample of
                 Just _ ->
                     Compiling
@@ -73,20 +171,35 @@ init maybeExample =
       , example = maybeExample
       , mouseX = 0
       , mouseY = 0
+      , packageUi = packageUi
       }
     , Cmd.batch
-        [ case maybeExample of
-            Just example ->
-                Http.get
-                    { url = "/example-files/" ++ Route.exampleSrc example ++ ".guida"
-                    , expect = Http.expectString GotExampleContent
-                    }
-
-            Nothing ->
-                Cmd.none
-        , registryFetch
+        [ setupProject
+            { direct = List.map toPortPackage example.direct
+            , indirect = List.map toPortPackage example.indirect
+            , content = example.content
+            }
+        , Cmd.map OnPackageMsg packageUiCmd
         ]
     )
+
+
+type alias PortPackage =
+    { author : String
+    , project : String
+    , version : String
+    }
+
+
+toPortPackage : Package -> PortPackage
+toPortPackage { author, project, version } =
+    { author = author
+    , project = project
+    , version = V.toString version
+    }
+
+
+port setupProject : { direct : List PortPackage, indirect : List PortPackage, content : String } -> Cmd msg
 
 
 
@@ -94,19 +207,19 @@ init maybeExample =
 
 
 type Msg
-    = TogglePackages
+    = OpenPackages
     | GotExampleContent (Result Http.Error String)
     | Rebuild
     | RebuildResult Encode.Value
     | OnMouseOver DOM.Rectangle Int Int
-    | GotRegistry (Result Http.Error (List Package))
+    | OnPackageMsg Ui.Package.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TogglePackages ->
-            ( { model | showPackages = not model.showPackages }, Cmd.none )
+        OpenPackages ->
+            ( { model | packageUi = Ui.Package.open model.packageUi }, Cmd.none )
 
         GotExampleContent (Ok content) ->
             ( { model | status = Success }, setEditorContentAndRebuild content )
@@ -135,18 +248,21 @@ update msg model =
         OnMouseOver { left, top } clientX clientY ->
             ( { model | mouseX = clientX - round left, mouseY = clientY - round top }, Cmd.none )
 
-        GotRegistry (Ok news) ->
+        OnPackageMsg subMsg ->
+            let
+                ( packageUi, shouldRebuild, packageUiCmd ) =
+                    Ui.Package.update subMsg model.packageUi
+            in
             ( { model
-                | registry =
-                    registryInitialWithDefaults model.defaultDirect model.defaultIndirect
-                        |> registryFromNews news
-                        |> Fetched.Success
+                | packageUi = packageUi
+                , status =
+                    -- if shouldRebuild then
+                    --     Status.changed model.status
+                    -- else
+                    model.status
               }
-            , Cmd.none
+            , Cmd.map OnPackageMsg packageUiCmd
             )
-
-        GotRegistry (Err ((Http.BadBody errMsg) as err)) ->
-            ( { model | registry = Fetched.Failed err }, Cmd.none )
 
 
 decodeResult : Decode.Decoder (Result Elm.Error.Error String)
@@ -163,7 +279,10 @@ decodeResult =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    rebuildResult RebuildResult
+    Sub.batch
+        [ rebuildResult RebuildResult
+        , Sub.map OnPackageMsg Ui.Package.subscriptions
+        ]
 
 
 
@@ -258,7 +377,7 @@ view session toSessionMsg toMsg model =
             Nothing ->
                 "Try Guida!"
     , body =
-        Layout.fullscreenView session toSessionMsg packagesDialogView <|
+        Layout.fullscreenView session toSessionMsg (packagesDialogView toMsg model) <|
             [ Html.section [ Attr.class "flex flex-col h-min-full md:h-full md:grid md:grid-cols-2 md:grid-rows-[1fr_min-content]" ]
                 [ Html.div
                     [ Attr.class "h-full overflow-auto border-b md:border-b-0 md:border-r border-gray-200"
@@ -286,7 +405,7 @@ view session toSessionMsg toMsg model =
                             [ Html.li []
                                 [ Html.button
                                     [ Attr.class "flex gap-0.5 items-center py-0.5 px-2 text-sm/7 text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                                    , Events.onClick (toMsg Rebuild)
+                                    , Events.onClick (toMsg OpenPackages)
                                     ]
                                     [ Html.text "Packages"
                                     ]
@@ -305,118 +424,117 @@ view session toSessionMsg toMsg model =
     }
 
 
-packagesDialogView : Html msg
-packagesDialogView =
-    let
-        openAttrs : List (Html.Attribute msg)
-        openAttrs =
-            if True then
-                [ Attr.attribute "open" "true" ]
-
-            else
-                []
-    in
-    Html.node "dialog"
-        (Attr.class "fixed inset-0 z-50"
-            :: openAttrs
-        )
-        [ Html.div
-            [ Attr.class "fixed inset-0 top-14 bg-zinc-400/20 backdrop-blur-xs data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-black/40"
-
-            -- , Events.onClick (toSessionMsg Session.ToggleMobileNavigation)
-            ]
-            []
-        , Html.div [ Attr.class "fixed top-0 bottom-0 left-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 ring-1 shadow-lg shadow-zinc-900/10 ring-zinc-900/7.5 duration-500 ease-in-out data-closed:-translate-x-full min-[416px]:max-w-sm sm:px-6 sm:pb-10 dark:bg-zinc-900 dark:ring-zinc-800" ]
-            [ Html.nav
-                [ Attr.class "relative flex flex-1 flex-col"
-                ]
-                [ Html.ul [ Aria.role "list", Attr.class "flex flex-1 flex-col gap-y-4" ]
-                    [ Html.li []
-                        [ Html.div
-                            [ Attr.class "text-xs/6 font-semibold text-gray-400"
-                            ]
-                            [ Html.text "Installed" ]
-                        , Html.ul
-                            [ Aria.role "list"
-                            , Attr.class "mt-2 space-y-1"
-                            ]
-                            [ Html.li
-                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-                                ]
-                                [ Html.span
-                                    [ Attr.class "truncate"
-                                    ]
-                                    [ Html.text "elm/random" ]
-                                , Html.div [ Attr.class "flex gap-x-3" ]
-                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
-                                        [ Html.text "2.0.1" ]
-                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.lockClosed [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    , Html.li []
-                        [ Html.div
-                            [ Attr.class "text-xs/6 font-semibold text-gray-400"
-                            ]
-                            [ Html.text "Registry" ]
-                        , Html.input
-                            [ Attr.class "mt-2 block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
-                            , Attr.type_ "search"
-                            , Attr.id "registry-search"
-                            , Attr.placeholder "Search"
-                            , Aria.ariaLabel "Search"
-                            ]
-                            []
-                        , Html.ul
-                            [ Aria.role "list"
-                            , Attr.class "mt-2 space-y-1"
-                            ]
-                            [ Html.li
-                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-                                ]
-                                [ Html.span
-                                    [ Attr.class "truncate"
-                                    ]
-                                    [ Html.text "elm/html" ]
-                                , Html.div [ Attr.class "flex gap-x-3" ]
-                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
-                                        [ Html.text "1.0.0" ]
-                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.plus [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
-                                    ]
-                                ]
-                            , Html.li
-                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-                                ]
-                                [ Html.span
-                                    [ Attr.class "truncate"
-                                    ]
-                                    [ Html.text "elm/random" ]
-                                , Html.div [ Attr.class "flex gap-x-3" ]
-                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
-                                        [ Html.text "2.0.1" ]
-                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.trash [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
-                                    ]
-                                ]
-                            , Html.li
-                                [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-                                ]
-                                [ Html.span
-                                    [ Attr.class "truncate"
-                                    ]
-                                    [ Html.text "elm/random" ]
-                                , Html.div [ Attr.class "flex gap-x-3" ]
-                                    [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
-                                        [ Html.text "2.0.1" ]
-                                    , Button.view Button.Button Button.Text Nothing [] [ Icon.lockClosed [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ]
+packagesDialogView : (Msg -> msg) -> Model -> Html msg
+packagesDialogView toMsg model =
+    -- let
+    --     openAttrs : List (Html.Attribute msg)
+    --     openAttrs =
+    --         if True then
+    --             [ Attr.attribute "open" "true" ]
+    --         else
+    --             []
+    -- in
+    -- Html.node "dialog"
+    --     (Attr.class "fixed inset-0 z-50"
+    --         :: openAttrs
+    --     )
+    --     [ Html.div
+    --         [ Attr.class "fixed inset-0 top-14 bg-zinc-400/20 backdrop-blur-xs data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in dark:bg-black/40"
+    --         -- , Events.onClick (toSessionMsg Session.ToggleMobileNavigation)
+    --         ]
+    --         []
+    --     , Html.div [ Attr.class "fixed top-0 bottom-0 left-0 w-full overflow-y-auto bg-white px-4 pt-6 pb-4 ring-1 shadow-lg shadow-zinc-900/10 ring-zinc-900/7.5 duration-500 ease-in-out data-closed:-translate-x-full min-[416px]:max-w-sm sm:px-6 sm:pb-10 dark:bg-zinc-900 dark:ring-zinc-800" ]
+    --         [ Html.nav
+    --             [ Attr.class "relative flex flex-1 flex-col"
+    --             ]
+    --             [ Html.ul [ Aria.role "list", Attr.class "flex flex-1 flex-col gap-y-4" ]
+    --                 [ Html.li []
+    --                     [ Html.div
+    --                         [ Attr.class "text-xs/6 font-semibold text-gray-400"
+    --                         ]
+    --                         [ Html.text "Installed" ]
+    --                     , Html.ul
+    --                         [ Aria.role "list"
+    --                         , Attr.class "mt-2 space-y-1"
+    --                         ]
+    --                         [ Html.li
+    --                             [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+    --                             ]
+    --                             [ Html.span
+    --                                 [ Attr.class "truncate"
+    --                                 ]
+    --                                 [ Html.text "elm/random" ]
+    --                             , Html.div [ Attr.class "flex gap-x-3" ]
+    --                                 [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+    --                                     [ Html.text "2.0.1" ]
+    --                                 , Button.view Button.Button Button.Text Nothing [] [ Icon.lockClosed [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+    --                                 ]
+    --                             ]
+    --                         ]
+    --                     ]
+    --                 , Html.li []
+    --                     [ Html.div
+    --                         [ Attr.class "text-xs/6 font-semibold text-gray-400"
+    --                         ]
+    --                         [ Html.text "Registry" ]
+    --                     , Html.input
+    --                         [ Attr.class "mt-2 block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500 dark:focus:outline-indigo-500"
+    --                         , Attr.type_ "search"
+    --                         , Attr.id "registry-search"
+    --                         , Attr.placeholder "Search"
+    --                         , Aria.ariaLabel "Search"
+    --                         ]
+    --                         []
+    --                     , Html.ul
+    --                         [ Aria.role "list"
+    --                         , Attr.class "mt-2 space-y-1"
+    --                         ]
+    --                         [ Html.li
+    --                             [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+    --                             ]
+    --                             [ Html.span
+    --                                 [ Attr.class "truncate"
+    --                                 ]
+    --                                 [ Html.text "elm/html" ]
+    --                             , Html.div [ Attr.class "flex gap-x-3" ]
+    --                                 [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+    --                                     [ Html.text "1.0.0" ]
+    --                                 , Button.view Button.Button Button.Text Nothing [] [ Icon.plus [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+    --                                 ]
+    --                             ]
+    --                         , Html.li
+    --                             [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+    --                             ]
+    --                             [ Html.span
+    --                                 [ Attr.class "truncate"
+    --                                 ]
+    --                                 [ Html.text "elm/random" ]
+    --                             , Html.div [ Attr.class "flex gap-x-3" ]
+    --                                 [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+    --                                     [ Html.text "2.0.1" ]
+    --                                 , Button.view Button.Button Button.Text Nothing [] [ Icon.trash [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+    --                                 ]
+    --                             ]
+    --                         , Html.li
+    --                             [ Attr.class "group flex justify-between gap-x-3 rounded-md p-1 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-amber-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+    --                             ]
+    --                             [ Html.span
+    --                                 [ Attr.class "truncate"
+    --                                 ]
+    --                                 [ Html.text "elm/random" ]
+    --                             , Html.div [ Attr.class "flex gap-x-3" ]
+    --                                 [ Html.span [ Attr.class "flex size-6 shrink-0 items-center text-[0.625rem] font-medium text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ]
+    --                                     [ Html.text "2.0.1" ]
+    --                                 , Button.view Button.Button Button.Text Nothing [] [ Icon.lockClosed [ SvgAttr.class "h-5 w-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-white" ] ]
+    --                                 ]
+    --                             ]
+    --                         ]
+    --                     ]
+    --                 ]
+    --             ]
+    --         ]
+    --     ]
+    Html.map (toMsg << OnPackageMsg) (Ui.Package.view model.packageUi)
 
 
 rebuildButton : (Msg -> msg) -> Model -> Html msg
