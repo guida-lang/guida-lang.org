@@ -103,7 +103,7 @@ view session toSessionMsg =
                                 ]
                             ]
                         , Html.li []
-                            [ Html.a [ Attr.href "https://github.com/guida-lang/compiler/blob/main/CONTRIBUTING.md" ]
+                            [ Html.a [ Attr.href "https://github.com/guida-lang/compiler/blob/master/CONTRIBUTING.md" ]
                                 [ Html.text "Contributing Guide"
                                 ]
                             ]

@@ -154,28 +154,378 @@ view session toSessionMsg model =
                     markdownRender """
 # Installation
 
-<todo />
+Guida is distributed as an **npm package**, making it easy to install globally as a CLI tool or locally as a library in your JavaScript or Node.js projects.
+
+## Prerequisites
+
+Before installing, make sure you have:
+
+- **Node.js v22.8.0** or later  
+- **npm** (comes bundled with Node)
+
+You can verify your versions with:
+
+```bash
+node --version
+npm --version
+````
+
+If you need Node.js, visit [nodejs.org](https://nodejs.org/) or use a version manager such as [nvm](https://github.com/nvm-sh/nvm).
+
+## Installing Guida (CLI)
+
+To install Guida globally on your system:
+
+```bash
+npm install -g guida
+```
+
+This will make the `guida` command available from your terminal.
+
+Check that the installation worked:
+
+```bash
+guida --version
+```
+
+You should see the installed version printed to the console.
+
+## Using Guida as a Library
+
+Guida can also be used **programmatically** inside Node.js or browser-based projects.
+Install it locally in your project:
+
+```bash
+npm install guida
+```
+
+Then import it in your JavaScript or TypeScript code:
+
+```js
+// Node.js (CommonJS)
+const guida = require('guida');
+
+// or ES Modules
+import guida from 'guida';
+
+// Example: compile a file or run commands programmatically
+guida.compile('src/Main.elm', { debug: true });
+```
+
+The same package entry can be imported in **browser environments**, where Guida runs entirely in JavaScript/WebAssembly.
+
+## Upgrading
+
+To upgrade to the latest release:
+
+```bash
+npm update -g guida
+```
+
+For project-local installations:
+
+```bash
+npm update guida
+```
+
+## Local Development (Optional)
+
+If you want to build or test Guida locally:
+
+```bash
+git clone https://github.com/guida-lang/compiler
+cd compiler
+nvm use
+npm install
+npm run build
+npm link
+```
+
+This links your local build so that `guida` runs your development version.
+
+## Troubleshooting
+
+If `guida` isn't found after installation:
+
+* Ensure your global npm bin path is in your system's `PATH` variable.
+* Try reinstalling with elevated permissions if necessary.
+* On Windows, restart your terminal after installation.
+
+For more help, join the [Guida Discord server](https://discord.gg/Ur33engz).
 """
 
                 Route.YourFirstProgram ->
                     markdownRender """
 # Your First Program
 
-<todo />
+Now that you have Guida installed, let's create your first program!
+
+This short example walks you through setting up a simple project, compiling it, and running the output in your browser or terminal.
+
+## Create a Project Folder
+
+Start by creating a new directory for your project:
+
+```bash
+mkdir hello-guida
+cd hello-guida
+````
+
+Initialize it as a Guida project:
+
+```bash
+guida init
+```
+
+This command creates a basic folder structure:
+
+```
+hello-guida/
+├── guida.json
+├── src/
+│   └── Main.guida
+├── tests/
+│   └── Example.guida
+```
+
+> Guida follows the same project structure as Elm 0.19.1 — so existing Elm projects will work here too.
+
+## Write Your First Program
+
+Open `src/Main.guida` and replace its contents with:
+
+```guida
+module Main exposing (main)
+
+import Html exposing (text)
+
+main =
+    text "Hello, Guida!"
+```
+
+This simple program displays a piece of text in your browser.
+
+## Compile and Run
+
+To compile the program, run:
+
+```bash
+guida make src/Main.guida --output=index.html
+```
+
+This generates an `index.html` file in your project folder.
+You can open it directly in your browser:
+
+```bash
+open index.html
+```
+
+You should see:
+
+> **Hello, Guida!**
+
+## Using Guida in Node.js or the Browser
+
+You can also import Guida as a JavaScript module.
+This is useful for programmatic compilation or embedding the compiler in web tools.
+
+### Node.js Example
+
+```js
+import * as guida from "guida";
+
+const source = `
+module Main exposing (main)
+import Html exposing (text)
+main = text "Hello, from Node!"
+`;
+
+const output = await guida.compile(source);
+console.log(output);
+```
+
+### Browser Example
+
+If you include Guida via an ES module or a bundler:
+
+```js
+import * as guida from "guida";
+
+const result = await guida.compile(sourceCode);
+document.body.innerHTML = result.html;
+```
+
+This makes Guida useful not only as a CLI tool but also as a **programmable compiler** that can power editors, online sandboxes, and development tools.
 """
 
                 Route.ProjectSetup ->
                     markdownRender """
 # Project Setup
 
-<todo />
+Before building larger applications, let's take a closer look at how a **Guida project** is organized and configured.
+
+Guida uses a structure that's fully compatible with Elm 0.19.1, so existing Elm projects can run without changes.
+
+## Project Structure
+
+A minimal Guida project looks like this:
+
+```
+my-app/
+├── guida.json
+├── src/
+│   └── Main.guida
+├── tests/
+│   └── Example.guida
+````
+
+### `guida.json`
+
+This file defines your project's metadata, dependencies, and type (application or package).
+Here's an example:
+
+```json
+{
+  "type": "application",
+  "source-directories": ["src"],
+  "elm-version": "1.0.0",
+  "dependencies": {
+    "direct": {
+      "guida-lang/stdlib": "1.0.0"
+    },
+    "indirect": {}
+  },
+  "test-dependencies": {
+    "direct": {},
+    "indirect": {}
+  }
+}
+````
+
+## Source Files
+
+By default, all source files are located in the `src/` folder.
+Each file must start with a **module declaration**, such as:
+
+```guida
+module Main exposing (main)
+```
+
+Modules can import one another by name, for example:
+
+```guida
+import MyApp.Utils
+```
+
+## Building the Project
+
+Use the `guida make` command to compile your project:
+
+```bash
+guida make src/Main.elm --output=dist/index.html
+```
+
+Guida will automatically resolve all module dependencies, compile your code, and write the output to the given file.
+
+You can also compile to JavaScript directly:
+
+```bash
+guida make src/Main.elm --output=dist/app.js
+```
+
+This is useful when embedding Guida programs in other environments.
+
+## Local Packages and Custom Registries
+
+Guida supports **local registries**, allowing you to host your own package server for internal development.
+
+To point Guida to a local or custom registry, configure your environment or command-line flags.
+(Feature tracked in [compiler issue #74](https://github.com/guida-lang/compiler/issues/74))
+
+> 💡 If you're using the [`guida-lang/package-registry`](https://github.com/guida-lang/package-registry), it will automatically cache Elm packages and serve them locally via `localhost:3000`.
+
+## Project Commands Summary
+
+| Command        | Description                              |
+| -------------- | ---------------------------------------- |
+| `guida init`   | Create a new project scaffold            |
+| `guida make`   | Compile source files to HTML or JS       |
+| `guida repl`   | Start an interactive REPL (if available) |
+| `guida format` | Format source files                      |
+| `guida test`   | Run project tests                        |
 """
 
                 Route.MigrationFromElm ->
                     markdownRender """
 # Migration from Elm
 
-<todo />
+Guida is designed to be **fully backward compatible** with **Elm 0.19.1**.  
+If you already have an existing Elm project, the goal is that you can start using Guida with **zero code changes**.
+
+## Why Migration Matters
+
+Elm has a strong foundation — Guida builds on that same foundation while expanding the ecosystem, tooling, and long-term maintainability.  
+
+Guida's first priority is to give teams the confidence that **existing Elm projects continue to work exactly as before**, while opening the door to future improvements and a self-hosted compiler environment.
+
+Think of it like this:
+
+> 🧭 **Guida is to Elm what TypeScript is to JavaScript** — a natural evolution, not a fork in a different direction.
+
+## Step-by-Step Migration
+
+### 1. Install Guida
+
+You can install Guida globally or locally in your existing Elm project:
+
+```bash
+npm install -g guida
+````
+
+Or as a local dev dependency:
+
+```bash
+npm install --save-dev guida
+```
+
+### 2. Try Compiling with Guida
+
+From your Elm project directory, simply run:
+
+```bash
+guida make src/Main.elm
+```
+
+If everything is compatible, Guida will compile your project just like Elm.
+You can compare the output to verify that behavior is consistent.
+
+## Compatibility Notes
+
+* **Elm 0.19.1 Compatibility:** Guida currently targets full behavioral compatibility with Elm 0.19.1, including its syntax, compiler rules, and even certain edge cases.
+* **No Code Changes Required:** Your existing `elm.json`, imports, and module structure remain valid.
+* **Dependencies:** Guida uses the same package ecosystem as Elm but can also connect to a **custom registry**, allowing private or local package development.
+
+> 💡 If you use a local registry such as [`guida-lang/package-registry`](https://github.com/guida-lang/package-registry), you can mirror all Elm packages locally and work offline.
+
+## Optional Adjustments
+
+While not required, you can make small improvements once you're comfortable with Guida:
+
+* Update `elm.json` dependencies to the latest compatible versions.
+* Try compiling with Guida's experimental options as new versions evolve.
+* Report any inconsistencies between Elm and Guida on the [issue tracker](https://github.com/guida-lang/compiler/issues).
+
+## Future Evolution
+
+Over time, Guida will introduce **new language features** and **developer tools** while maintaining migration paths for existing Elm code.
+
+These may include:
+
+* Improved compiler performance (including WebAssembly builds)
+* Self-hosted compilation (written in Guida itself)
+* Extended tooling (tests, formatter, linter, etc.)
+
+The long-term goal is that you can migrate at your own pace — keeping the reliability of Elm while benefiting from Guida's progress.
 """
 
                 Route.SyntaxOverview ->
