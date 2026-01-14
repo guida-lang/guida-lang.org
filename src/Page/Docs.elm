@@ -1322,8 +1322,8 @@ viewStudent student =
 ```
 
 If you are worried about the performance of changing the order or updating information
-about particular students, you can start using the [`Html.Lazy`](https://package.elm-lang.org/packages/elm/html/latest/Html-Lazy)
-and [`Html.Keyed`](https://package.elm-lang.org/packages/elm/html/latest/Html-Keyed) modules.
+about particular students, you can start using the [`Html.Lazy`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html-Lazy)
+and [`Html.Keyed`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html-Keyed) modules.
 The updated code would look something like this:
 
 ```guida
@@ -1717,8 +1717,8 @@ library so we will focus on that.
 
 A Guida file is called a **module**. To access code in other files, you need to `import` it!
 
-So say you want to use the [`div`](htthttps://package.elm-lang.org/packages/elm/html/latest/Html#div)
-function from the [`elm/html`](http://package.elm-lang.org/packages/elm/html/latest) package.
+So say you want to use the [`div`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html#div)
+function from the [`elm/html`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html) package.
 The simplest way is to import it like this:
 
 ```guida
@@ -1732,7 +1732,7 @@ After saying `import Html` we can refer to anything inside that module as long a
 This works for:
 
 - **Values** - we can refer to `Html.text`, `Html.h1`, etc.
-- **Types** - We can refer to [`Attribute`](http://package.elm-lang.org/packages/elm/html/latest/Html#Attribute)
+- **Types** - We can refer to [`Attribute`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html#Attribute)
   as `Html.Attribute`.
 
 So if we add a type annotation to `main` it would look like this:
@@ -1745,7 +1745,7 @@ main =
   Html.div [] []
 ```
 
-We are referring to the [`Html`](http://package.elm-lang.org/packages/elm/html/latest/Html#Html)
+We are referring to the [`Html`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html#Html)
 type, using its *qualified* name `Html.Html`. This can feel weird at first, but it starts
 feeling natural quite quickly!
 
@@ -1770,7 +1770,7 @@ main =
 
 Saying `import Html.Attributes as A` lets us refer to any value or type in `Html.Attributes`
 as long as it is qualified with an `A`. So now we can refer to
-[`style`](http://package.elm-lang.org/packages/elm/html/latest/Html-Attributes#style) as `A.style`.
+[`style`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Html-Attributes#style) as `A.style`.
 
 ## `exposing`
 
@@ -1988,7 +1988,7 @@ a `Visitor` variant, the compiler points out all the places that need to be upda
 That is very convenient, but in a big project, maybe you want to get through it extra quickly.
 
 In that case, it can be helpful to use
-[`Debug.todo`](https://package.elm-lang.org/packages/elm/core/latest/Debug#todo) to leave some
+[`Debug.todo`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/Debug#todo) to leave some
 code incomplete:
 
 ```guida

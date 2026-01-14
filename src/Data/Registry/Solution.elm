@@ -10,7 +10,7 @@ import Json.Encode as JE
 
 
 type alias Solution =
-    { elm : V.Version
+    { guida : V.Version
     , direct : Dict Package.Key V.Version
     , indirect : Dict Package.Key V.Version
     }
@@ -49,7 +49,7 @@ toSolution packages =
 decoder : JD.Decoder Solution
 decoder =
     JD.map3 Solution
-        (JD.field "elm-version" V.decoder)
+        (JD.field "guida-version" V.decoder)
         (JD.at [ "dependencies", "direct" ] decodeDeps)
         (JD.at [ "dependencies", "indirect" ] decodeDeps)
 
@@ -72,7 +72,7 @@ decodeDeps =
 encode : Solution -> JE.Value
 encode solution =
     JE.object
-        [ ( "elm-version", V.encode solution.elm )
+        [ ( "guida-version", V.encode solution.guida )
         , ( "direct", JE.dict Package.nameFromKey V.encode solution.direct )
         , ( "indirect", JE.dict Package.nameFromKey V.encode solution.indirect )
         ]

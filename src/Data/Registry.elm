@@ -267,7 +267,21 @@ decoder =
                             []
                 )
         )
-        (Decode.dict decodeVersions)
+        (Decode.oneOf
+            [ Decode.map2
+                (Dict.foldl
+                    (\k v ->
+                        Dict.update k
+                            (\maybeList ->
+                                Just (Maybe.withDefault [] maybeList ++ v)
+                            )
+                    )
+                )
+                (Decode.field "guida" (Decode.dict decodeVersions))
+                (Decode.field "elm" (Decode.dict decodeVersions))
+            , Decode.dict decodeVersions
+            ]
+        )
 
 
 decodeVersions : Decode.Decoder (List V.Version)

@@ -62,4 +62,4 @@ nameFromKey ( author, project ) =
 
 toDocsLink : Package -> String
 toDocsLink package =
-    "https://package.elm-lang.org/packages/" ++ toName package ++ "/" ++ V.toString package.version
+    "https://package.guida-lang.org/packages/" ++ toName package ++ "/" ++ V.toString package.version

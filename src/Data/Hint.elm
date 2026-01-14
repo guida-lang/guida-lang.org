@@ -155,7 +155,7 @@ addImport depsInfo imp hints =
                     imp.module_
 
                 url =
-                    "https://package.elm-lang.org/packages/" ++ info.pkg ++ "/latest/" ++ name
+                    "https://package.guida-lang.org/packages/" ++ info.pkg ++ "/latest/" ++ name
             in
             hints
                 |> addQualified name imp.alias_ url info

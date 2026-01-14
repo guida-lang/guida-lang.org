@@ -43,19 +43,8 @@ type alias Example =
 
 animation : Example
 animation =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "evancz" "elm-playground" (V.Version 1 0 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -89,20 +78,8 @@ view time =
 
 book : Example
 book =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "http" (V.Version 2 0 0)
-        ]
-    , indirect =
-        [ Package "elm" "bytes" (V.Version 1 0 8)
-        , Package "elm" "file" (V.Version 1 0 5)
-        , Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -271,12 +248,7 @@ view model =
 
 cards : Example
 cards =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "random" (V.Version 1 0 0)
-        ]
+    { direct = Defaults.direct
     , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
@@ -447,18 +419,8 @@ viewCard card =
 
 clock : Example
 clock =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -600,19 +562,8 @@ viewHand width length turns =
 
 crate : Example
 crate =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm-explorations" "linear-algebra" (V.Version 1 0 3)
-        , Package "elm-explorations" "webgl" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -847,19 +798,8 @@ fragmentShader =
 
 cube : Example
 cube =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm-explorations" "linear-algebra" (V.Version 1 0 3)
-        , Package "elm-explorations" "webgl" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -1067,19 +1007,8 @@ fragmentShader =
 
 dragAndDrop : Example
 dragAndDrop =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "file" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "json" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "bytes" (V.Version 1 0 8)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -1227,19 +1156,8 @@ hijack msg =
 
 firstPerson : Example
 firstPerson =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm-explorations" "linear-algebra" (V.Version 1 0 3)
-        , Package "elm-explorations" "webgl" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -1766,19 +1684,8 @@ main =
 
 imagePreviews : Example
 imagePreviews =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "file" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "json" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "bytes" (V.Version 1 0 8)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -1948,19 +1855,8 @@ hijack msg =
 
 keyboard : Example
 keyboard =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "evancz" "elm-playground" (V.Version 1 0 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -1993,19 +1889,8 @@ update computer ( x, y ) =
 
 mario : Example
 mario =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "evancz" "elm-playground" (V.Version 1 0 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2115,19 +2000,8 @@ update computer mario =
 
 mouse : Example
 mouse =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "evancz" "elm-playground" (V.Version 1 0 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2165,18 +2039,8 @@ update computer memory =
 
 numbers : Example
 numbers =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "random" (V.Version 1 0 0)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2268,19 +2132,8 @@ view model =
 
 picture : Example
 picture =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "evancz" "elm-playground" (V.Version 1 0 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2305,18 +2158,8 @@ main =
 
 positions : Example
 positions =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "random" (V.Version 1 0 0)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2420,20 +2263,8 @@ view model =
 
 quotes : Example
 quotes =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "http" (V.Version 2 0 0)
-        , Package "elm" "json" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "bytes" (V.Version 1 0 8)
-        , Package "elm" "file" (V.Version 1 0 5)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2580,18 +2411,8 @@ quoteDecoder =
 
 shapes : Example
 shapes =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -2747,19 +2568,8 @@ view model =
 
 thwomp : Example
 thwomp =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm-explorations" "linear-algebra" (V.Version 1 0 3)
-        , Package "elm-explorations" "webgl" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -3071,17 +2881,8 @@ fragmentShader =
 
 time : Example
 time =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "time" (V.Version 1 0 0)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -3184,19 +2985,8 @@ view model =
 
 triangle : Example
 triangle =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm-explorations" "linear-algebra" (V.Version 1 0 3)
-        , Package "elm-explorations" "webgl" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -3344,19 +3134,8 @@ fragmentShader =
 
 turtle : Example
 turtle =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "evancz" "elm-playground" (V.Version 1 0 3)
-        ]
-    , indirect =
-        [ Package "elm" "json" (V.Version 1 1 3)
-        , Package "elm" "svg" (V.Version 1 0 1)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
@@ -3398,19 +3177,8 @@ update computer turtle =
 
 upload : Example
 upload =
-    { direct =
-        [ Package "elm" "browser" (V.Version 1 0 2)
-        , Package "elm" "core" (V.Version 1 0 5)
-        , Package "elm" "file" (V.Version 1 0 5)
-        , Package "elm" "html" (V.Version 1 0 0)
-        , Package "elm" "json" (V.Version 1 1 3)
-        ]
-    , indirect =
-        [ Package "elm" "bytes" (V.Version 1 0 8)
-        , Package "elm" "time" (V.Version 1 0 0)
-        , Package "elm" "url" (V.Version 1 0 0)
-        , Package "elm" "virtual-dom" (V.Version 1 0 2)
-        ]
+    { direct = Defaults.direct
+    , indirect = Defaults.indirect
     , content = String.trim """
 module Main exposing (main)
 
