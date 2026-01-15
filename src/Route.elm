@@ -35,6 +35,7 @@ type DocumentationSection
     | CustomTypes
     | PatternMatching
     | ErrorHandling
+    | GuidaJson
     | ImmutabilityAndPurity
     | TheTypeSystem
     | ConcurrencyAndEffects
@@ -219,6 +220,7 @@ parser =
         , Parser.map (Docs CustomTypes) (Parser.s "docs" </> Parser.s "custom-types")
         , Parser.map (Docs PatternMatching) (Parser.s "docs" </> Parser.s "pattern-matching")
         , Parser.map (Docs ErrorHandling) (Parser.s "docs" </> Parser.s "error-handling")
+        , Parser.map (Docs GuidaJson) (Parser.s "docs" </> Parser.s "guida-json")
 
         -- DOCS: Core Concepts
         , Parser.map (Docs ImmutabilityAndPurity) (Parser.s "docs" </> Parser.s "immutability-and-purity")

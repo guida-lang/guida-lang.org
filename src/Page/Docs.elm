@@ -116,6 +116,13 @@ htmlRenderer =
                                 [ Html.text "🚧 Work in Progress" ]
                             ]
                     )
+                , Markdown.Html.tag "info"
+                    (\children ->
+                        Html.div [ Attr.class "my-6 flex gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-50/50 p-4 text-sm/6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-amber-200 dark:[--tw-prose-links-hover:var(--color-amber-300)] dark:[--tw-prose-links:var(--color-white)]" ]
+                            [ Icon.info [ SvgAttr.class "mt-1 h-4 w-4 flex-none fill-amber-500 stroke-white dark:fill-amber-200/20 dark:stroke-amber-200" ]
+                            , Html.div [ Attr.class "[&>:first-child]:mt-0 [&>:last-child]:mb-0" ] children
+                            ]
+                    )
                 ]
     }
 
@@ -199,7 +206,7 @@ Install it locally in your project:
 npm install guida
 ```
 
-Then import it in your JavaScript or TypeScript code:
+Import it in your JavaScript or TypeScript code:
 
 ```js
 // Node.js (CommonJS)
@@ -207,12 +214,7 @@ const guida = require('guida');
 
 // or ES Modules
 import guida from 'guida';
-
-// Example: compile a file or run commands programmatically
-guida.compile('src/Main.elm', { debug: true });
 ```
-
-The same package entry can be imported in **browser environments**, where Guida runs entirely in JavaScript/WebAssembly.
 
 ## Upgrading
 
@@ -288,8 +290,6 @@ hello-guida/
 │   └── Example.guida
 ```
 
-> Guida follows the same project structure as Elm 0.19.1 — so existing Elm projects will work here too.
-
 ## Write Your First Program
 
 Open `src/Main.guida` and replace its contents with:
@@ -331,31 +331,106 @@ This is useful for programmatic compilation or embedding the compiler in web too
 
 ### Node.js Example
 
-```js
-import * as guida from "guida";
-
-const source = `
-module Main exposing (main)
-import Html exposing (text)
-main = text "Hello, from Node!"
-`;
-
-const output = await guida.compile(source);
-console.log(output);
-```
+<todo />
 
 ### Browser Example
 
-If you include Guida via an ES module or a bundler:
+With the help of a dependency such as [indexeddb-fs](https://www.npmjs.com/package/indexeddb-fs),
+to simulate a filesystem in the browser, you can use Guida to compile code directly
+in web applications like so:
 
 ```js
-import * as guida from "guida";
+const guida = require("guida");
 
-const result = await guida.compile(sourceCode);
-document.body.innerHTML = result.html;
+const { createFs } = require("indexeddb-fs");
+const fs = createFs({ databaseName: "guida-fs" });
+
+const config = {
+    XMLHttpRequest: globalThis.XMLHttpRequest,
+    env: {},
+    writeFile: fs.writeFile,
+    readFile: fs.readFile,
+    details: fs.details,
+    createDirectory: fs.createDirectory,
+    readDirectory: fs.readDirectory,
+    getCurrentDirectory: async () => "root",
+    homedir: async () => "root"
+};
+
+const defaultGuidaJson = `{
+  "type": "application",
+  "source-directories": [
+    "src"
+  ],
+  "guida-version": "1.0.0",
+  "dependencies": {
+    "direct": {
+      "guida-lang/stdlib": "1.0.0"
+    },
+    "indirect": {}
+  },
+  "test-dependencies": {
+    "direct": {},
+    "indirect": {}
+  }
+}`;
+
+window.addEventListener("load", async () => {
+  await fs.createDirectory("root/src");
+  await fs.writeFile("root/guida.json", defaultGuidaJson);
+
+  const code = document.getElementById("code");
+  const preview = document.getElementById("preview");
+
+  await fs.writeFile("root/src/Main.guida", code.value);
+
+  const result = await guida.make(config, "root/src/Main.guida", {
+    debug: true,
+    optimize: false,
+    sourcemaps: false
+  });
+
+  if (Object.prototype.hasOwnProperty.call(result, "error")) {
+    console.error(result.error);
+  } else {
+    preview.srcdoc = result.output;
+  }
+});
 ```
 
-This makes Guida useful not only as a CLI tool but also as a **programmable compiler** that can power editors, online sandboxes, and development tools.
+With the following HTML structure:
+
+```html
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Try Guida!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="/app.js"></script>
+</head>
+
+<body>
+  <textarea id="code">
+module Main exposing (..)
+
+import Html exposing (text)
+
+main = text "Hello Guida!"
+</textarea>
+
+  <iframe id="preview"></iframe>
+</body>
+
+</html>
+```
+
+You can find the full code on how to use Guida in a browser-based project on Guida's
+complier repository here: <https://github.com/guida-lang/compiler/tree/master/try>.
+
+This makes Guida useful not only as a CLI tool but also as a **programmable compiler**
+that can power editors, online sandboxes, and development tools.
 """
 
                 Route.ProjectSetup ->
@@ -388,7 +463,7 @@ Here's an example:
 {
   "type": "application",
   "source-directories": ["src"],
-  "elm-version": "1.0.0",
+  "guida-version": "1.0.0",
   "dependencies": {
     "direct": {
       "guida-lang/stdlib": "1.0.0"
@@ -408,7 +483,7 @@ By default, all source files are located in the `src/` folder.
 Each file must start with a **module declaration**, such as:
 
 ```guida
-module Main exposing (main)
+module Main exposing (..)
 ```
 
 Modules can import one another by name, for example:
@@ -433,44 +508,61 @@ You can also compile to JavaScript directly:
 guida make src/Main.elm --output=dist/app.js
 ```
 
-This is useful when embedding Guida programs in other environments.
+This is useful when configuring the HTML and CSS yourself.
 
 ## Local Packages and Custom Registries
 
-Guida supports **local registries**, allowing you to host your own package server for internal development.
+By default, Guida will use the [public Guida package registry](https://package.guida-lang.org) to resolve dependencies.
 
-To point Guida to a local or custom registry, configure your environment or command-line flags.
-(Feature tracked in [compiler issue #74](https://github.com/guida-lang/compiler/issues/74))
+But Guida also supports **local registries**, allowing you to host your own package
+server for internal development. To point Guida to a local or custom registry,
+use the `GUIDA_REGISTRY` environment variable:
 
-> 💡 If you're using the [`guida-lang/package-registry`](https://github.com/guida-lang/package-registry), it will automatically cache Elm packages and serve them locally via `localhost:3000`.
+```bash
+GUIDA_REGISTRY=http://localhost:3000 guida make src/Main.elm --output=dist/index.html
+```
+
+To run a local registry server, you can use the
+[`guida-lang/package-registry`](https://github.com/guida-lang/package-registry) project.
 
 ## Project Commands Summary
 
-| Command        | Description                              |
-| -------------- | ---------------------------------------- |
-| `guida init`   | Create a new project scaffold            |
-| `guida make`   | Compile source files to HTML or JS       |
-| `guida repl`   | Start an interactive REPL (if available) |
-| `guida format` | Format source files                      |
-| `guida test`   | Run project tests                        |
+| Command           | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| `guida repl`      | Start an interactive REPL (if available)                 |
+| `guida init`      | Create a new project scaffold                            |
+| `guida make`      | Compile source files to HTML or JS                       |
+| `guida install`   | Install project dependencies                             |
+| `guida uninstall` | Uninstall project dependencies                           |
+| `guida bump`      | Figures out the next version number based on API changes |
+| `guida diff`      | Detects API changes                                      |
+| `guida publish`   | Publishes your package                                   |
+| `guida format`    | Format source files                                      |
+| `guida test`      | Run project tests                                        |
 """
 
                 Route.MigrationFromElm ->
                     markdownRender """
 # Migration from Elm
 
-Guida is designed to be **fully backward compatible** with **Elm 0.19.1**.  
-If you already have an existing Elm project, the goal is that you can start using Guida with **zero code changes**.
+Guida is designed to be **fully backward compatible** with **Elm 0.19.1**.
+
+If you already have an existing Elm project, the goal is that you can still compile
+and run it using Guida without any changes.
+
+Also, transitioning to Guida should be as simple as introducing a `guida.json`
+file to your project root. For this you can run the [`guida init`](/docs/1.0.0/commands/init) command.
+
+<info>
+Only Guida projects can contain `.guida` files, and consequently, Guida syntax.
+This helps making sure that Elm projects still compile with Elm tooling.
+</info>
 
 ## Why Migration Matters
 
 Elm has a strong foundation — Guida builds on that same foundation while expanding the ecosystem, tooling, and long-term maintainability.  
 
 Guida's first priority is to give teams the confidence that **existing Elm projects continue to work exactly as before**, while opening the door to future improvements and a self-hosted compiler environment.
-
-Think of it like this:
-
-> 🧭 **Guida is to Elm what TypeScript is to JavaScript** — a natural evolution, not a fork in a different direction.
 
 ## Step-by-Step Migration
 
@@ -499,33 +591,31 @@ guida make src/Main.elm
 If everything is compatible, Guida will compile your project just like Elm.
 You can compare the output to verify that behavior is consistent.
 
+You can now move forward using Guida commands like `guida make`, `guida test`, and others.
+
+### 3. Create a `guida.json` file
+
+The next step is to create a `guida.json` file in your project root.
+You can do this by running [`guida init`](/docs/1.0.0/commands/init) and adjusting the generated file to match your existing Elm setup.
+
+<info>
+One difference between Elm and Guida is it's base dependencies. While Elm relies on `elm/core` and `elm/browser`,
+Guida uses a single [`guida-lang/stdlib`](https://package.guida-lang.org/packages/guida-lang/stdlib/latest/) package that combines the functionality contained on `elm` and `elm-explorations` packages.
+</info>
+
+This will allow you to create `.guida` files and use Guida-specific syntax in your project, while `.elm` files will continue to work as before.
+
+You can optionally delete the existing `elm.json` file once you're confident everything works.
+
 ## Compatibility Notes
 
 * **Elm 0.19.1 Compatibility:** Guida currently targets full behavioral compatibility with Elm 0.19.1, including its syntax, compiler rules, and even certain edge cases.
 * **No Code Changes Required:** Your existing `elm.json`, imports, and module structure remain valid.
 * **Dependencies:** Guida uses the same package ecosystem as Elm but can also connect to a **custom registry**, allowing private or local package development.
 
-> 💡 If you use a local registry such as [`guida-lang/package-registry`](https://github.com/guida-lang/package-registry), you can mirror all Elm packages locally and work offline.
-
-## Optional Adjustments
-
-While not required, you can make small improvements once you're comfortable with Guida:
-
-* Update `elm.json` dependencies to the latest compatible versions.
-* Try compiling with Guida's experimental options as new versions evolve.
-* Report any inconsistencies between Elm and Guida on the [issue tracker](https://github.com/guida-lang/compiler/issues).
-
-## Future Evolution
-
-Over time, Guida will introduce **new language features** and **developer tools** while maintaining migration paths for existing Elm code.
-
-These may include:
-
-* Improved compiler performance (including WebAssembly builds)
-* Self-hosted compilation (written in Guida itself)
-* Extended tooling (tests, formatter, linter, etc.)
-
-The long-term goal is that you can migrate at your own pace — keeping the reliability of Elm while benefiting from Guida's progress.
+<info>
+If you use a local registry such as [`guida-lang/package-registry`](https://github.com/guida-lang/package-registry), you can mirror all Elm packages locally and work offline.
+</info>
 """
 
                 Route.SyntaxOverview ->
@@ -573,6 +663,13 @@ The long-term goal is that you can migrate at your own pace — keeping the reli
                 Route.ErrorHandling ->
                     markdownRender """
 # Error Handling
+
+<todo />
+"""
+
+                Route.GuidaJson ->
+                    markdownRender """
+# guida.json
 
 <todo />
 """
@@ -864,11 +961,21 @@ The same can be done with definitions and custom types:
 "Hey again!" : String
 ```
 
-When you run `guida repl` in a project with a [/docs/guida-json](guida.json) file, you can
-import any module available in the project. So if your project has an `elm/html` dependency,
-you could say:
+When you run `guida repl` in a project with a [`guida.json`](/docs/guida-json) file,
+you can import any module available in the project. So if your project has an `guida-lang/project-metadata-utils`
+dependency, you could say:
 
 ```guida
+> import Guida.Version
+> Guida.Version.one
+Version 1 0 0 : Guida.Version.Version
+```
+
+When you run `guida repl` in a project with an `elm.json` file,
+you can also import any module available in the project. So if your project has an `elm/html`
+dependency, you could also say:
+
+```elm
 > import Html exposing (Html)
 > Html.text "hello"
 <internals> : Html msg
@@ -879,6 +986,10 @@ you could say:
 If you create a module in your project named `MyThing` in your project, you can say
 `import MyThing` in the REPL as well. Any module that is accessible in your project
 should be accessible in the REPL.
+
+One thing to notice, is that the REPL will only accept Guida syntax if you are running
+within a Guida project (i.e. a project with a `guida.json` file), or a folder without
+an `elm.json` file. If you are in an Elm project, the REPL will only accept Elm syntax.
 
 ---
 
@@ -2617,6 +2728,7 @@ sidebarNavigation =
             , { title = "Custom Types", href = "/docs/custom-types", route = Route.CustomTypes, sections = [] }
             , { title = "Pattern Matching", href = "/docs/pattern-matching", route = Route.PatternMatching, sections = [] }
             , { title = "Error Handling", href = "/docs/error-handling", route = Route.ErrorHandling, sections = [] }
+            , { title = "guida.json", href = "/docs/guida-json", route = Route.GuidaJson, sections = [] }
             ]
       }
     , { title = "Core Concepts"
