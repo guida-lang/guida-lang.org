@@ -5,6 +5,7 @@ import js from "@eslint/js";
 export default defineConfig([
   globalIgnores([
     "elm-stuff",
+    "public/codemirror/mode/guida.js",
     "public/main.js",
     "styles/typography.js",
     "tmp",
