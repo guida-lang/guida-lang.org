@@ -19,7 +19,7 @@
     "elm": "^0.19.1-6",
     "elm-format": "^0.8.7",
     "esbuild": "0.25.2",
-    "guida": "^1.0.0-alpha",
+    "guida": "^1.0.0-beta",
     "http-server": "^14.1.1",
     "indexeddb-fs": "^2.1.5",
     "tailwindcss": "^4.0.7"
