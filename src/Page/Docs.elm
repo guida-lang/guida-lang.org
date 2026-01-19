@@ -1351,21 +1351,565 @@ This consistency enables strong composability.
                     markdownRender """
 # Modules and Imports
 
-<todo />
+Modules are Guida's primary unit of organization.
+They define **namespaces**, control **visibility**, and help structure applications and libraries into clear, reusable components.
+
+Guida follows Elm's module system closely, while leaving room for future extensions.
+
+---
+
+## Defining a Module
+
+Every Guida source file defines exactly one module.
+
+```guida
+module Main exposing (main)
+````
+
+* The module name must match the file name (`Main.guida`)
+* Module names are capitalized and may be nested using dots
+
+Example:
+
+```guida
+module MyApp.Utils.String exposing (capitalize)
+```
+
+File path:
+
+```
+src/MyApp/Utils/String.guida
+```
+
+---
+
+## Exposing Values
+
+The `exposing` clause defines what is accessible from outside the module.
+
+### Exposing Specific Values
+
+```guida
+module Math exposing (add, subtract)
+```
+
+Only `add` and `subtract` are public.
+
+---
+
+### Exposing Everything
+
+```guida
+module Math exposing (..)
+```
+
+All values, types, and constructors become public.
+
+> ⚠️ Exposing everything is convenient for small modules but discouraged for libraries.
+
+---
+
+## Importing Modules
+
+Use `import` to bring another module into scope:
+
+```guida
+import Html
+```
+
+Imported values must be referenced using the module name:
+
+```guida
+Html.text "Hello"
+```
+
+---
+
+## Importing with Aliases
+
+Aliases make long module names easier to work with:
+
+```guida
+import Html.Attributes as Attr
+```
+
+Usage:
+
+```guida
+Attr.class "container"
+```
+
+---
+
+## Importing Specific Values
+
+You can import only what you need:
+
+```guida
+import Html exposing (text)
+```
+
+This allows using `text` without the module prefix.
+
+```guida
+Html.div [] [ text "Hello" ]
+```
+
+---
+
+## Importing Types and Constructors
+
+Custom types can be imported with or without constructors.
+
+```guida
+import Status exposing (Status(..))
+```
+
+This imports the type and all of its constructors.
+
+To import only the type name:
+
+```guida
+import Status exposing (Status)
+```
+
+---
+
+## Qualified Imports and Clarity
+
+Guida encourages **explicit imports** and qualified access for clarity, especially in large codebases.
+
+```guida
+import User.Profile as Profile
+```
+
+This makes it clear where values originate from.
+
+---
+
+## Module Cycles
+
+Guida does not allow circular module dependencies.
+
+```text
+A → B → C → A  ❌
+```
+
+This restriction ensures predictable compilation and clearer architecture.
+
+---
+
+## Modules and Types
+
+Type aliases and custom types follow the same exposure rules as values:
+
+```guida
+module User exposing (User, create)
+```
+
+Constructors must be explicitly exposed if needed:
+
+```guida
+module Status exposing (Status(..))
+```
 """
 
                 Route.CustomTypes ->
                     markdownRender """
 # Custom Types
 
-<todo />
+Custom types allow you to define your own data structures by explicitly listing all possible shapes a value can take.  
+They are a core feature of Guida and are commonly used to model state, domain concepts, and control flow.
+
+Guida follows Elm's custom type system closely, while allowing room for future extensions.
+
+---
+
+## Defining a Custom Type
+
+Custom types are defined using the `type` keyword:
+
+```guida
+type Status
+    = Loading
+    | Success String
+    | Error String
+````
+
+This defines a new type `Status` with three possible values.
+
+Each variant is called a **constructor**.
+
+---
+
+## Constructors
+
+Constructors are functions that create values of the custom type:
+
+```guida
+loading : Status
+loading =
+    Loading
+
+success : String -> Status
+success msg =
+    Success msg
+```
+
+Each constructor has a type derived from its parameters.
+
+---
+
+## Using Custom Types
+
+Custom types are commonly used with `case` expressions:
+
+```guida
+statusMessage status =
+    case status of
+        Loading ->
+            "Loading..."
+
+        Success msg ->
+            msg
+
+        Error err ->
+            err
+```
+
+Guida ensures that all cases are handled at compile time.
+
+---
+
+## Exhaustiveness Checking
+
+Guida requires pattern matches on custom types to be **exhaustive**:
+
+```guida
+case status of
+    Loading ->
+        "Loading"
+```
+
+This will result in a compile-time error if cases are missing.
+
+This guarantees that no case is accidentally ignored.
+
+---
+
+## Custom Types vs Type Aliases
+
+Custom types and type aliases serve different purposes.
+
+### Type Alias
+
+```guida
+type alias User =
+    { name : String
+    , age : Int
+    }
+```
+
+Type aliases name an existing structure.
+
+### Custom Type
+
+```guida
+type User
+    = Guest
+    | Registered String
+```
+
+Custom types define a closed set of possible values.
+
+---
+
+## Parameterized Custom Types
+
+Custom types can take type parameters:
+
+```guida
+type Result error value
+    = Ok value
+    | Err error
+```
+
+This allows custom types to be reused with different data.
+
+---
+
+## Recursive Custom Types
+
+Custom types can be recursive:
+
+```guida
+type Tree
+    = Empty
+    | Node Int Tree Tree
+```
+
+Recursive types are commonly used for trees and other hierarchical data.
+
+---
+
+## Pattern Matching with Custom Types
+
+Pattern matching can destructure values inside constructors:
+
+```guida
+case result of
+    Ok value ->
+        value
+
+    Err _ ->
+        defaultValue
+```
+
+### Named Wildcards (Guida Extension)
+
+```guida
+Err _ignored ->
+    defaultValue
+```
+
+<info>
+Elm only allows the anonymous `_`.
+Guida allows named wildcards to improve readability without introducing bindings.
+</info>
+
+---
+
+## Custom Types in Public APIs
+
+When exposing custom types from a module, you control whether constructors are public:
+
+```guida
+module Status exposing (Status(..))
+```
+
+This exposes both the type and its constructors.
+
+To expose the type without constructors:
+
+```guida
+module Status exposing (Status)
+```
+
+This allows consumers to work with the type abstractly.
 """
 
                 Route.PatternMatching ->
                     markdownRender """
 # Pattern Matching
 
-<todo />
+Pattern matching allows you to inspect and destructure values based on their shape.
+It is one of the most powerful features in Guida and is used extensively with custom types, lists, tuples, and records.
+
+Guida follows Elm's pattern-matching model closely, with a few targeted extensions.
+
+---
+
+## Where Pattern Matching Is Used
+
+Pattern matching appears in several places:
+
+- `case` expressions
+- Function arguments
+- `let` bindings
+- Destructuring assignments
+
+---
+
+## Case Expressions
+
+The most explicit form of pattern matching is the `case` expression:
+
+```guida
+describe value =
+    case value of
+        Just x ->
+            x
+
+        Nothing ->
+            "none"
+````
+
+Every possible case must be handled.
+
+---
+
+## Exhaustiveness Checking
+
+Guida checks pattern matches at compile time to ensure they are **exhaustive**.
+
+```guida
+case status of
+    Loading ->
+        "Loading"
+```
+
+This will produce a compiler error if other cases are missing.
+
+This guarantees that pattern matching cannot fail at runtime.
+
+---
+
+## Matching Custom Types
+
+Custom types are commonly matched by constructor:
+
+```guida
+case result of
+    Ok value ->
+        value
+
+    Err error ->
+        error
+```
+
+Each constructor introduces a new branch.
+
+---
+
+## Matching Lists
+
+Lists can be matched using `[]` and `(::)`:
+
+```guida
+case list of
+    [] ->
+        "empty"
+
+    x :: xs ->
+        "non-empty"
+```
+
+---
+
+## Matching Tuples
+
+Tuples can be destructured positionally:
+
+```guida
+case pair of
+    ( name, age ) ->
+        name
+```
+
+Guida allows matching tuples with more than three elements:
+
+```guida
+( x, y, z, t ) ->
+    x + y
+```
+
+<info>
+Elm limits tuples to three elements.
+Guida allows tuples of arbitrary length.
+</info>
+
+---
+
+## Record Pattern Matching
+
+Records can be destructured by field name:
+
+```guida
+case user of
+    { name, age } ->
+        name
+```
+
+Only the listed fields are matched.
+
+---
+
+## Pattern Matching in Function Arguments
+
+Patterns can appear directly in function parameters:
+
+```guida
+userAge { age } =
+    age
+```
+
+---
+
+## Wildcard Patterns
+
+### Anonymous Wildcard
+
+```guida
+case value of
+    _ ->
+        defaultValue
+```
+
+This matches anything and ignores the value.
+
+Guida allows named wildcards:
+
+```guida
+case value of
+    _unused ->
+        defaultValue
+```
+
+<info>
+Elm only supports the anonymous `_`.
+Guida allows named wildcards to improve readability without introducing bindings.
+</info>
+
+Named wildcards do not introduce a usable variable.
+
+---
+
+## Literal Patterns
+
+You can match on literals:
+
+```guida
+case number of
+    0 ->
+        "zero"
+
+    1 ->
+        "one"
+
+    _ ->
+        "many"
+```
+
+---
+
+## Pattern Matching in Let Bindings
+
+Values can be destructured in `let` bindings:
+
+```guida
+let
+    ( x, y ) =
+        point
+in
+x + y
+```
+
+The pattern must match, or compilation fails.
+
+---
+
+## Nested Patterns
+
+Patterns can be nested:
+
+```guida
+case data of
+    Just ( x, y ) ->
+        x + y
+
+    Nothing ->
+        0
+```
 """
 
                 Route.ErrorHandling ->
