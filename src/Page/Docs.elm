@@ -118,7 +118,7 @@ htmlRenderer =
                     )
                 , Markdown.Html.tag "info"
                     (\children ->
-                        Html.div [ Attr.class "my-6 flex gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-50/50 p-4 text-sm/6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-amber-200 dark:[--tw-prose-links-hover:var(--color-amber-300)] dark:[--tw-prose-links:var(--color-white)]" ]
+                        Html.div [ Attr.class "not-prose my-6 flex gap-2.5 rounded-2xl border border-amber-500/20 bg-amber-50/50 p-4 text-sm/6 text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/5 dark:text-amber-200 dark:[--tw-prose-links-hover:var(--color-amber-300)] dark:[--tw-prose-links:var(--color-white)]" ]
                             [ Icon.info [ SvgAttr.class "mt-1 h-4 w-4 flex-none fill-amber-500 stroke-white dark:fill-amber-200/20 dark:stroke-amber-200" ]
                             , Html.div [ Attr.class "[&>:first-child]:mt-0 [&>:last-child]:mb-0" ] children
                             ]
@@ -622,21 +622,729 @@ If you use a local registry such as [`guida-lang/package-registry`](https://gith
                     markdownRender """
 # Syntax Overview
 
-<todo />
+Guida builds on Elm's syntax and semantics, but it is **not limited to Elm 0.19.1**.
+In addition to supporting existing Elm syntax, Guida introduces **new language features and extensions**
+designed to improve expressiveness, ergonomics, and long-term evolution.
+
+If you already know Elm, Guida will feel familiar — but with carefully chosen enhancements.
+
+This section provides a high-level overview of Guida's syntax, highlighting both
+**core constructs** and **Guida-specific additions**.
+
+---
+
+## Files and Modules
+
+Every Guida source file defines exactly one module:
+
+```guida
+module Main exposing (main)
+````
+
+* The file name must match the module name (`Main.guida`)
+* The `exposing` clause controls public visibility
+
+This follows the same rules as Elm.
+
+---
+
+## Values and Functions
+
+Values and functions are defined using `=`:
+
+```guida
+answer =
+    42
+```
+
+Functions list parameters before the `=`:
+
+```guida
+add x y =
+    x + y
+```
+
+Functions are pure and evaluated eagerly.
+
+---
+
+## Function Application
+
+Function application uses whitespace instead of parentheses:
+
+```guida
+add 2 3
+```
+
+Parentheses are only used for grouping:
+
+```guida
+add (2 + 3) 4
+```
+
+---
+
+## Let Expressions
+
+Local bindings are introduced with `let ... in`:
+
+```guida
+area radius =
+    let
+        pi =
+            3.14159
+    in
+    pi * radius * radius
+```
+
+Bindings are immutable and scoped to the `in` expression.
+
+---
+
+## Conditionals
+
+Conditionals are expressions and require both branches:
+
+```guida
+sign n =
+    if n < 0 then
+        -1
+    else
+        1
+```
+
+The condition must evaluate to a `Bool`.
+
+---
+
+## Pattern Matching
+
+Pattern matching is commonly done with `case` expressions:
+
+```guida
+describe list =
+    case list of
+        [] ->
+            "empty"
+
+        x :: xs ->
+            "non-empty"
+```
+
+### Wildcard Patterns (Guida Extension)
+
+Guida allows **named wildcard patterns**, which bind nothing but improve readability:
+
+```guida
+case value of
+    _unused ->
+        defaultResult
+```
+
+This differs from `_`, which is anonymous.
+
+<info>
+Elm only allows the anonymous wildcard `_`.
+Guida allows **named wildcards** (`_name`) for clarity, without introducing a binding.
+</info>
+
+---
+
+## Custom Types
+
+Custom (algebraic) types are defined using `type`:
+
+```guida
+type Status
+    = Loading
+    | Success String
+    | Error String
+```
+
+Guida follows Elm's approach here.
+
+---
+
+## Records
+
+Records are collections of named fields:
+
+```guida
+user =
+    { name = "Alice"
+    , age = 30
+    }
+```
+
+### Record Access
+
+```guida
+user.name
+```
+
+### Record Updates
+
+```guida
+{ user | age = 31 }
+```
+
+Guida allows **updating records referenced by another record's field**:
+
+```guida
+model.user = { model.user | age = 31 }
+```
+
+<info>
+Elm requires nested updates using intermediate bindings.
+Guida allows **direct nested record updates**, reducing boilerplate.
+</info>
+
+Guida also allows modifying records via **qualified names**, improving clarity in deeply nested structures:
+
+```guida
+config = { Configuration.defaultConfig | timeout = 3000 }
+```
+
+<info>
+Elm does not allow **record updates through qualified paths**.
+Guida introduces this syntax to improve readability in larger codebases.
+</info>
+
+---
+
+## Tuples
+
+```guida
+pair =
+    ( "Alice", 30 )
+```
+
+Guida supports **tuples with more than three elements**:
+
+```guida
+coordinates =
+    ( x, y, z, time )
+```
+
+<info>
+Elm limits tuples to a maximum of 3 elements.
+Guida allows **tuples of arbitrary length**.
+</info>
+
+---
+
+## Numbers
+
+### Numeric Separators (Guida Extension)
+
+Guida allows underscores in numeric literals for readability:
+
+```guida
+million =
+    1_000_000
+
+piApprox =
+    3.141_592
+```
+
+<info>
+Elm does not support numeric separators.
+Guida allows **`_` in numeric literals** for readability.
+</info>
+
+---
+
+## Lists
+
+```guida
+numbers =
+    [ 1, 2, 3 ]
+```
+
+Lists are homogeneous and immutable.
+
+---
+
+## Comments
+
+Single-line comments:
+
+```guida
+-- This is a comment
+```
+
+Multi-line comments:
+
+```guida
+{- This
+   spans
+   multiple lines -}
+```
 """
 
                 Route.ValuesAndTypes ->
                     markdownRender """
 # Values and Types
 
-<todo />
+Values and types are central to Guida.
+Every expression has a type, and types are checked at compile time to catch errors early and make programs easier to reason about.
+
+Guida follows Elm's type system closely, while laying the groundwork for future extensions.
+
+---
+
+## Values
+
+A **value** is the result of evaluating an expression.  
+Values are **immutable** — once defined, they never change.
+
+```guida
+count =
+    10
+
+greeting =
+    "Hello"
+````
+
+Functions are also values:
+
+```guida
+increment x =
+    x + 1
+```
+
+---
+
+## Primitive Types
+
+Guida provides the same core primitive types as Elm:
+
+| Type     | Description              |
+| -------- | ------------------------ |
+| `Int`    | Whole numbers            |
+| `Float`  | Floating-point numbers   |
+| `Bool`   | `True` or `False`        |
+| `Char`   | Single Unicode character |
+| `String` | UTF-8 encoded text       |
+
+### Numeric Literals (Guida extension)
+
+Guida allows underscores in numeric literals for readability:
+
+```guida
+timeout =
+    60_000
+
+piApprox =
+    3.141_592
+```
+
+<info>
+Elm does not support numeric separators.
+Guida allows **`_` in numeric literals** for readability.
+</info>
+
+---
+
+## Type Inference
+
+Guida uses **global type inference**.
+In most cases, you do not need to write type annotations — the compiler can infer them automatically.
+
+```guida
+add x y =
+    x + y
+```
+
+The inferred type is:
+
+```guida
+add : number -> number -> number
+```
+
+---
+
+## Type Annotations
+
+You can add type annotations to make code clearer or to guide the compiler:
+
+```guida
+add : number -> number -> number
+add x y =
+    x + y
+```
+
+Type annotations are recommended.
+
+---
+
+## Function Types
+
+Function types use arrows (`->`):
+
+```guida
+isEven : Int -> Bool
+```
+
+Functions that return functions are common:
+
+```guida
+add : Int -> Int -> Int
+```
+
+This means “a function that takes an `Int` and returns a function that takes an `Int` and returns another `Int`”.
+
+---
+
+## Composite Types
+
+### Tuples
+
+```guida
+pair : ( String, Int )
+pair =
+    ( "Alice", 30 )
+```
+
+Guida allows tuples with more than three elements:
+
+```guida
+recording :
+    ( String, Int, Bool, Float )
+```
+
+<info>
+Elm limits tuples to a maximum of 3 elements.
+Guida allows **tuples of arbitrary length**.
+</info>
+
+---
+
+### Records
+
+Records group named values together:
+
+```guida
+user : { name : String, age : Int }
+user =
+    { name = "Alice", age = 30 }
+```
+
+Records use **structural typing** — only field names and types matter.
+
+---
+
+## Record Updates and Types
+
+Basic record updates:
+
+```guida
+{ user | age = 31 }
+```
+
+Guida allows **updating records referenced by another record's field**:
+
+```guida
+model.user = { model.user | age = 31 }
+```
+
+<info>
+Elm requires nested updates using intermediate bindings.
+Guida allows **direct nested record updates**, reducing boilerplate.
+</info>
+
+---
+
+## Custom Types
+
+Custom types let you define your own data shapes:
+
+```guida
+type Status
+    = Loading
+    | Success String
+    | Error String
+```
+
+Each constructor introduces a new possible value of the type.
+
+---
+
+## Pattern Matching and Types
+
+Pattern matching ensures **exhaustiveness** — all possible cases must be handled:
+
+```guida
+statusMessage status =
+    case status of
+        Loading ->
+            "Loading..."
+
+        Success _ ->
+            "Done"
+
+        Error msg ->
+            msg
+```
+
+### Named Wildcards
+
+```guida
+case value of
+    _ignored ->
+        defaultValue
+```
+
+<info>
+Elm only allows the anonymous wildcard `_`.
+Guida allows **named wildcards** (`_name`) to improve readability without introducing bindings.
+</info>
+
+---
+
+## Type Aliases
+
+Type aliases create readable names for complex types:
+
+```guida
+type alias User =
+    { name : String
+    , age : Int
+    }
+```
+
+Aliases do not create new types — they only help writting types that are easier to read.
+
+---
+
+## Ports and Types
+
+Guida supports Elm-style ports, with planned extensions.
+
+```guida
+port sendMessage : String -> Cmd msg
+port messageReceiver : (String -> msg) -> Sub msg
+```
 """
 
                 Route.FunctionsAndExpressions ->
                     markdownRender """
 # Functions and Expressions
 
-<todo />
+Functions are the primary building block of Guida programs.
+Everything in Guida is an **expression**, and expressions always evaluate to a value.
+
+This section explains how functions are defined, applied, and composed, and how expressions are structured.
+
+---
+
+## Defining Functions
+
+Functions are defined by listing parameters followed by `=`:
+
+```guida
+add x y =
+    x + y
+````
+
+This defines a function that takes two arguments and returns their sum.
+
+Functions are **pure** — given the same inputs, they always produce the same output.
+
+---
+
+## Function Application
+
+Function application uses whitespace instead of parentheses:
+
+```guida
+add 2 3
+```
+
+Application is **left-associative**:
+
+```guida
+add 2 3 4
+```
+
+is interpreted as:
+
+```guida
+((add 2) 3) 4
+```
+
+---
+
+## Anonymous Functions
+
+Anonymous (lambda) functions are written using `\\`:
+
+```guida
+List.map (\\x x * 2) [ 1, 2, 3 ]
+```
+
+Anonymous functions are commonly used for short transformations.
+
+---
+
+## Partial Application
+
+Functions can be partially applied:
+
+```guida
+addTwo =
+    add 2
+```
+
+Here, `addTwo` is a function that takes one argument and adds `2`.
+
+Partial application is a core feature of Guida.
+
+---
+
+## Let Expressions
+
+Use `let ... in` to define local bindings:
+
+```guida
+greet name =
+    let
+        message =
+            "Hello, " ++ name
+    in
+    message
+```
+
+Everything inside `let` is an expression and must produce a value.
+
+---
+
+## If Expressions
+
+Conditionals are expressions and must include both branches:
+
+```guida
+absolute n =
+    if n < 0 then
+        -n
+    else
+        n
+```
+
+The `then` and `else` branches must return values of the same type.
+
+---
+
+## Case Expressions
+
+Use `case` to branch on data using pattern matching:
+
+```guida
+describe list =
+    case list of
+        [] ->
+            "empty"
+
+        x :: xs ->
+            "non-empty"
+```
+
+### Exhaustiveness
+
+Guida requires all possible cases to be handled:
+
+```guida
+case status of
+    Loading ->
+        "Loading"
+```
+
+This will result in a compile-time error if cases are missing.
+
+---
+
+## Pattern Matching in Function Arguments
+
+Patterns can be used directly in function parameters:
+
+```guida
+length list =
+    case list of
+        [] ->
+            0
+
+        _ :: xs ->
+            1 + length xs
+```
+
+---
+
+## Named Wildcards in Patterns
+
+```guida
+case value of
+    _ignored ->
+        defaultValue
+```
+
+<info>
+Elm only allows the anonymous `_`.
+Guida allows named wildcards for improved readability without introducing bindings.
+</info>
+
+---
+
+## Operators as Functions
+
+Operators are functions and can be used infix or prefix:
+
+```guida
+1 + 2
+(+) 1 2
+```
+
+This allows operators to be passed as arguments:
+
+```guida
+List.foldl (+) 0 numbers
+```
+
+---
+
+## Pipelines
+
+Pipelines help write readable, left-to-right code:
+
+```guida
+numbers
+    |> List.map (\\x x * 2)
+    |> List.filter (\\x x > 5)
+```
+
+Pipelines do not change evaluation order — they only affect readability.
+
+---
+
+## Composition
+
+Function composition uses `<<` and `>>`:
+
+```guida
+toString << sqrt << toFloat
+```
+
+---
+
+## Expressions Everywhere
+
+In Guida, everything is an expression:
+
+* `if` expressions
+* `case` expressions
+* `let` expressions
+* Function bodies
+
+This consistency enables strong composability.
 """
 
                 Route.ModulesAndImports ->
@@ -975,7 +1683,7 @@ When you run `guida repl` in a project with an `elm.json` file,
 you can also import any module available in the project. So if your project has an `elm/html`
 dependency, you could also say:
 
-```elm
+```guida
 > import Html exposing (Html)
 > Html.text "hello"
 <internals> : Html msg
@@ -2401,7 +3109,7 @@ type alias Comment =
 Now remember that type *aliases* are just alternate names for the real type. So to make `Comment`
 into a concrete type, the compiler would start expanding it out.
 
-```elm
+```guida
   { message : String
   , upvotes : Int
   , downvotes : Int
