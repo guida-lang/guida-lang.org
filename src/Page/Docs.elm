@@ -1916,35 +1916,771 @@ case data of
                     markdownRender """
 # Error Handling
 
-<todo />
+Guida does not use exceptions for error handling.
+Instead, errors are represented explicitly in the type system, making all failure cases visible and enforceable at compile time.
+
+This approach encourages safer, more predictable programs.
+
+---
+
+## Errors as Data
+
+In Guida, errors are values.
+They are typically represented using custom types such as `Maybe` and `Result`.
+
+```guida
+type Result error value
+    = Ok value
+    | Err error
+````
+
+A function that may fail returns a value that encodes both success and failure cases.
+
+---
+
+## Using `Maybe`
+
+`Maybe` represents an optional value:
+
+```guida
+type Maybe a
+    = Just a
+    | Nothing
+```
+
+Example:
+
+```guida
+findUser : Int -> Maybe User
+```
+
+Handling a `Maybe` value requires pattern matching:
+
+```guida
+case findUser id of
+    Just user ->
+        user.name
+
+    Nothing ->
+        "Unknown user"
+```
+
+This makes missing data explicit.
+
+---
+
+## Using `Result`
+
+`Result` is used when failures need more information:
+
+```guida
+parseInt : String -> Result String Int
+```
+
+Handling a `Result`:
+
+```guida
+case parseInt input of
+    Ok value ->
+        value
+
+    Err message ->
+        message
+```
+
+The error type can be any type, including a custom one.
+
+---
+
+## Chaining Computations
+
+Guida provides functions for working with `Maybe` and `Result` values:
+
+```guida
+Result.map toString result
+Result.andThen parseNext result
+```
+
+This allows errors to propagate naturally without explicit branching at every step.
+
+---
+
+## Custom Error Types
+
+For larger applications, custom error types improve clarity:
+
+```guida
+type LoginError
+    = InvalidCredentials
+    | NetworkError
+    | ServerError String
+```
+
+Using a custom error type ensures all error cases are handled explicitly.
+
+---
+
+## Pattern Matching and Exhaustiveness
+
+When matching on error values, Guida enforces exhaustiveness:
+
+```guida
+case login user pass of
+    Ok session ->
+        session
+
+    Err InvalidCredentials ->
+        "Wrong password"
+
+    Err NetworkError ->
+        "Connection failed"
+
+    Err (ServerError msg) ->
+        msg
+```
+
+This prevents unhandled error cases.
+
+---
+
+## No Runtime Exceptions
+
+Guida does not support runtime exceptions for user code.
+
+<info>
+Errors are not thrown or caught at runtime.
+All error cases must be handled explicitly through types.
+</info>
+
+This leads to more predictable and maintainable programs.
+
+---
+
+## Compiler Errors vs Runtime Errors
+
+It's important to distinguish between:
+
+* **Compiler errors**: Type mismatches, missing cases, invalid syntax
+* **Runtime errors**: Represented explicitly using `Maybe` or `Result`
+
+Many classes of runtime errors are eliminated by the compiler.
 """
 
                 Route.GuidaJson ->
                     markdownRender """
 # guida.json
 
-<todo />
+Guida introduces a configuration file called **`guida.json`**.
+Its presence at the root of a project determines whether the project is treated as a **Guida project** or an **Elm project**.
+
+This file plays a role similar to `elm.json`, but with important differences that enable Guida-specific syntax, files, and dependencies, while still supporting gradual migration from Elm.
+
+---
+
+## Elm Projects vs Guida Projects
+
+Guida distinguishes projects based on which configuration file is present:
+
+### Elm Project
+- Contains an `elm.json`
+- Does **not** contain a `guida.json`
+- Only `.elm` files are allowed
+- Only Elm 0.19.1 syntax is allowed
+- Fully compatible with the Elm toolchain
+
+### Guida Project
+- Contains a `guida.json` at the project root
+- May also contain an `elm.json`, but **`guida.json` takes precedence**
+- Allows:
+  - `.guida` files using Guida syntax
+  - `.elm` files using **Elm-only syntax**
+- Enables gradual migration from Elm to Guida
+
+<info>
+Adding a `guida.json` turns an Elm project into a Guida project.  
+Existing `.elm` files continue to work unchanged, while new Guida features can be adopted incrementally.
+</info>
+
+---
+
+## Why `guida.json` Exists
+
+`guida.json` serves two main purposes:
+
+1. **Project identity**  
+   It explicitly marks a project as a Guida project, enabling Guida syntax and `.guida` files.
+
+2. **Dependency and version management**  
+   It replaces Elm's package structure with a Guida-specific one, centered around a unified standard library.
+
+This design allows Elm and Guida code to coexist during migration, without ambiguity or breaking changes.
+
+---
+
+## Application Projects
+
+Running `guida init` creates a `guida.json` file for an application project.
+
+Example:
+
+```json
+{
+  "type": "application",
+  "source-directories": [
+    "src"
+  ],
+  "guida-version": "1.0.0",
+  "dependencies": {
+    "direct": {
+      "guida-lang/stdlib": "1.0.0"
+    },
+    "indirect": {}
+  },
+  "test-dependencies": {
+    "direct": {},
+    "indirect": {}
+  }
+}
+````
+
+### Key Differences from `elm.json`
+
+* **`guida-version`** replaces `elm-version`
+
+  This specifies which versions of Guida the project is compatible with.
+
+* **Unified standard library**
+
+  By default, Guida depends only on `guida-lang/stdlib`.
+  This package includes the functionality traditionally provided by  `elm/*` and `elm-explorations/*`.
+  As a result, Guida projects typically require fewer explicit dependencies.
+
+---
+
+## Package Projects
+
+Running `guida init --package` creates a `guida.json` suitable for publishing a Guida package.
+
+Example:
+
+```json
+{
+  "type": "package",
+  "name": "author/project",
+  "summary": "helpful summary of your project, less than 80 characters",
+  "license": "BSD-3-Clause",
+  "version": "1.0.0",
+  "exposed-modules": [],
+  "guida-version": "1.0.0 <= v < 2.0.0",
+  "dependencies": {
+    "guida-lang/stdlib": "1.0.0 <= v < 2.0.0"
+  },
+  "test-dependencies": {}
+}
+```
+
+### Differences from Elm Packages
+
+* Uses **`guida-version`** instead of `elm-version`
+* Depends on **`guida-lang/stdlib`** instead of individual `elm` and `elm-explorations` packages
+
+---
+
+## Mixing `.elm` and `.guida` Files
+
+In a Guida project:
+
+* `.guida` files:
+  * Can use Guida syntax and features
+* `.elm` files:
+  * Must remain valid Elm 0.19.1 code
+  * Cannot use Guida-specific syntax
+
+This rule ensures:
+
+* Backward compatibility
+* Clear boundaries between Elm and Guida code
+* Safe, incremental migration paths
+
+---
+
+## Summary
+
+* `guida.json` defines a project as a **Guida project**
+* Its presence enables Guida syntax and `.guida` files
+* It takes precedence over `elm.json` if both exist
+* Guida simplifies dependency management via `guida-lang/stdlib`
+* Elm code remains first-class and supported during migration
+
+With `guida.json`, Guida extends Elm's project model while keeping it familiar and predictable.
 """
 
                 Route.ImmutabilityAndPurity ->
                     markdownRender """
 # Immutability and Purity
 
-<todo />
+Immutability and purity are foundational concepts in Guida.
+They shape how data is modeled, how programs are structured, and how systems remain reliable as they grow.
+
+Guida inherits these principles from Elm and preserves them as core guarantees of the language.
+
+---
+
+## Immutability
+
+In Guida, **values are immutable**.
+
+Once a value is created, it can never be changed. There is no assignment that mutates existing data, and there is no concept of in-place updates.
+
+```guida
+count = 0
+newCount = count + 1
+````
+
+Here, `newCount` is a new value. The original `count` remains unchanged.
+
+This applies uniformly to:
+
+* Numbers and strings
+* Lists and arrays
+* Records
+* Custom types
+
+---
+
+## Updating Data by Creating New Values
+
+Instead of modifying data, Guida encourages **creating updated copies**.
+
+### Records
+
+```guida
+user =
+    { name = "Alex"
+    , age = 30
+    }
+
+olderUser =
+    { user | age = user.age + 1 }
+```
+
+The original `user` record is unchanged.
+`olderUser` is a new record with an updated `age`.
+
+---
+
+## Why Immutability Matters
+
+Immutability provides strong guarantees:
+
+* **No hidden state changes**
+* **Predictable behavior**
+* **Safe concurrency**
+* **Simpler reasoning about code**
+
+When data cannot change unexpectedly, understanding and refactoring code becomes significantly easier.
+
+---
+
+## Purity
+
+Guida functions are **pure by default**.
+
+A pure function:
+
+* Always produces the same output for the same input
+* Has no side effects
+* Does not depend on external or hidden state
+
+```guida
+add a b =
+    a + b
+```
+
+Calling `add 2 3` will *always* return `5`.
+
+---
+
+## Side Effects Are Explicit
+
+Operations that interact with the outside world, such as:
+
+* HTTP requests
+* Reading the current time
+* Random number generation
+* Interacting with JavaScript
+
+are not performed directly inside functions.
+
+Instead, Guida models side effects explicitly, making them visible in the program structure.
+
+This ensures:
+
+* Side effects are controlled
+* Behavior remains predictable
+* Testing becomes easier
+
+---
+
+## Immutability and the Architecture
+
+These principles enable Guida's application architecture:
+
+* State is represented as immutable data
+* Updates create new versions of state
+* Effects are described, not executed directly
+
+This separation keeps business logic clean and declarative.
+
+---
+
+## Guida vs Elm
+
+<info>
+Guida preserves Elm's guarantees around immutability and purity.
+Even as Guida introduces new syntax and capabilities, these principles remain non-negotiable.
+</info>
+
+---
+
+## Summary
+
+* All values in Guida are immutable
+* Functions are pure by default
+* State changes are modeled by creating new values
+* Side effects are explicit and controlled
+
+These guarantees form the basis for reliable, maintainable Guida programs and underpin every other core concept in the language.
 """
 
                 Route.TheTypeSystem ->
                     markdownRender """
 # The Type System
 
-<todo />
+Guida has a **strong, static type system** designed to catch errors early, make code easier to understand, and support long-term maintainability.
+
+The type system is closely aligned with Elm's, while serving as a stable foundation for Guida-specific evolution.
+
+---
+
+## Strong and Static Typing
+
+Guida is **statically typed**.
+
+This means:
+- Types are checked at compile time
+- Many errors are caught before the program runs
+- Well-typed programs do not encounter type errors at runtime
+
+```guida
+add a b =
+    a + b
+````
+
+Here, the compiler infers the type:
+
+```guida
+add : number -> number -> number
+```
+
+You are not required to annotate types, but you can when clarity is useful.
+
+---
+
+## Type Inference
+
+Guida uses **type inference** to reduce boilerplate.
+
+The compiler automatically determines the most general type that satisfies the program.
+
+```guida
+identity x =
+    x
+```
+
+Inferred type:
+
+```guida
+identity : a -> a
+```
+
+Type inference keeps code concise while preserving safety.
+
+---
+
+## Explicit Type Annotations
+
+You can add type annotations to:
+
+* Document intent
+* Improve error messages
+* Lock down public APIs
+
+```guida
+increment : Int -> Int
+increment n =
+    n + 1
+```
+
+Type annotations are especially recommended for:
+
+* Public functions
+* Module interfaces
+* Library code
+
+---
+
+## No `null`, No Implicit Undefined Values
+
+Guida does not have:
+
+* `null`
+* `undefined`
+* Implicit missing values
+
+Instead, absence is modeled explicitly using types such as `Maybe`.
+
+```guida
+findUser : Id -> Maybe User
+```
+
+This forces all cases to be handled, eliminating a large class of runtime errors.
+
+---
+
+## Algebraic Data Types
+
+Guida supports **algebraic data types** (also called custom types).
+
+```guida
+type Status
+    = Loading
+    | Success Data
+    | Failure Error
+```
+
+These types:
+
+* Encode domain logic directly in the type system
+* Make invalid states unrepresentable
+* Work seamlessly with pattern matching
+
+---
+
+## Exhaustive Pattern Matching
+
+When pattern matching on a type, Guida ensures **all cases are handled**.
+
+```guida
+view status =
+    case status of
+        Loading ->
+            "Loading..."
+
+        Success data ->
+            "Done"
+
+        Failure err ->
+            "Something went wrong"
+```
+
+Missing cases result in compile-time errors.
+
+---
+
+## Parametric Polymorphism
+
+Guida supports **parametric polymorphism**, allowing types to be generic.
+
+```guida
+type Box a =
+    Box a
+```
+
+This enables reusable abstractions without sacrificing type safety.
+
+---
+
+## Type Safety as a Design Constraint
+
+Guida treats type safety as a **non-negotiable constraint**, not an optional feature.
+
+* Unsafe casts are not allowed
+* Types cannot be bypassed
+* Compiler guarantees are trusted and enforced
+
+These constraints enable confident refactoring and large-scale codebases.
+
+---
+
+## Guida vs Elm
+
+<info>
+Guida's type system is intentionally aligned with Elm's.
+New language features are designed to integrate with the type system, not weaken it.
+</info>
+
+---
+
+## Summary
+
+* Guida is strongly and statically typed
+* Types are inferred automatically
+* Explicit annotations improve clarity and stability
+* Absence is modeled explicitly
+* Custom types and pattern matching are central tools
+
+The type system is the backbone of Guida's reliability and a key reason why programs remain correct as they evolve.
 """
 
                 Route.ConcurrencyAndEffects ->
                     markdownRender """
 # Concurrency and Effects
 
-<todo />
+Guida supports concurrency while preserving the guarantees of immutability and purity.
+Rather than relying on shared mutable state, Guida uses a **message-based model** where effects and concurrency are explicit and controlled.
+
+This approach enables scalable applications without introducing race conditions or unpredictable behavior.
+
+---
+
+## No Shared Mutable State
+
+In Guida, there is no shared mutable memory between concurrent parts of a program.
+
+Because:
+- All values are immutable
+- Functions are pure
+- State is replaced, not mutated
+
+Concurrency does not require locks, mutexes, or synchronization primitives.
+
+This eliminates an entire class of bugs common in traditional concurrent systems.
+
+---
+
+## Effects Are Explicit
+
+Guida separates **pure logic** from **effects**.
+
+Pure code:
+- Computes values
+- Transforms data
+- Is easy to test and reason about
+
+Effects:
+- Interact with the outside world
+- Are represented explicitly in program structure
+- Are executed by the runtime, not by arbitrary functions
+
+This separation ensures that concurrency does not compromise correctness.
+
+---
+
+## The Command and Message Model
+
+Concurrency in Guida is expressed through **commands** and **messages**.
+
+- **Commands** describe work to be done (such as HTTP requests or timers)
+- **Messages** represent the results of that work
+
+```guida
+update msg model =
+    case msg of
+        FetchData ->
+            ( model, fetchData )
+
+        DataFetched result ->
+            ( { model | data = result }, none )
+````
+
+The runtime:
+
+* Executes commands concurrently when possible
+* Delivers messages back to the program
+* Ensures all updates remain pure and sequential
+
+---
+
+## Cooperative Concurrency
+
+Guida's concurrency model is **cooperative**, not preemptive.
+
+* Programs do not block threads
+* Long-running work is expressed as effects
+* The runtime schedules and coordinates execution
+
+This keeps application logic simple while allowing the runtime to handle complexity efficiently.
+
+---
+
+## Tasks and Asynchronous Work
+
+Asynchronous operations are modeled using **tasks**.
+
+Tasks:
+
+* Represent work that may succeed or fail
+* Do not execute immediately
+* Are converted into commands when needed
+
+```guida
+getTime : Task Error Time
+```
+
+Tasks make asynchrony explicit and composable.
+
+---
+
+## Error Handling in Concurrent Code
+
+Errors from concurrent operations are represented as values.
+
+```guida
+Task Error Result
+```
+
+This means:
+
+* Failures must be handled explicitly
+* No uncaught exceptions
+* Error handling is enforced by the type system
+
+Concurrency does not introduce hidden failure modes.
+
+---
+
+## Deterministic Updates
+
+Even when multiple commands run concurrently:
+
+* Messages are processed one at a time
+* State updates are deterministic
+* The order of handling messages is well-defined
+
+This ensures that the same sequence of messages always produces the same result.
+
+---
+
+## Guida vs Elm
+
+<info>
+Guida follows Elm's concurrency and effect model.
+While Guida may introduce new effect capabilities over time, the core principles of explicit
+effects and message-based concurrency remain unchanged.
+</info>
+
+---
+
+## Summary
+
+* Guida enables concurrency without shared mutable state
+* Effects are explicit and controlled
+* Asynchronous work is modeled with tasks and commands
+* Errors are values, not exceptions
+* Concurrent programs remain deterministic and predictable
+
+This model allows Guida programs to scale in complexity while preserving reliability and clarity.
 """
 
                 Route.StateAndArchitecture ->
