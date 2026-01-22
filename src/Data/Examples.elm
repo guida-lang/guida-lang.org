@@ -43,8 +43,11 @@ type alias Example =
 
 animation : Example
 animation =
-    { direct = Defaults.direct
-    , indirect = Defaults.indirect
+    { direct =
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        , Package "evancz" "elm-playground" (V.Version 1 0 3)
+        ]
+    , indirect = []
     , content = String.trim """
 module Main exposing (main)
 
@@ -1855,8 +1858,11 @@ hijack msg =
 
 keyboard : Example
 keyboard =
-    { direct = Defaults.direct
-    , indirect = Defaults.indirect
+    { direct =
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        , Package "evancz" "elm-playground" (V.Version 1 0 3)
+        ]
+    , indirect = []
     , content = String.trim """
 module Main exposing (main)
 
@@ -1889,8 +1895,11 @@ update computer ( x, y ) =
 
 mario : Example
 mario =
-    { direct = Defaults.direct
-    , indirect = Defaults.indirect
+    { direct =
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        , Package "evancz" "elm-playground" (V.Version 1 0 3)
+        ]
+    , indirect = []
     , content = String.trim """
 module Main exposing (main)
 
@@ -2000,8 +2009,11 @@ update computer mario =
 
 mouse : Example
 mouse =
-    { direct = Defaults.direct
-    , indirect = Defaults.indirect
+    { direct =
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        , Package "evancz" "elm-playground" (V.Version 1 0 3)
+        ]
+    , indirect = []
     , content = String.trim """
 module Main exposing (main)
 
@@ -2132,8 +2144,11 @@ view model =
 
 picture : Example
 picture =
-    { direct = Defaults.direct
-    , indirect = Defaults.indirect
+    { direct =
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        , Package "evancz" "elm-playground" (V.Version 1 0 3)
+        ]
+    , indirect = []
     , content = String.trim """
 module Main exposing (main)
 
@@ -3134,8 +3149,11 @@ fragmentShader =
 
 turtle : Example
 turtle =
-    { direct = Defaults.direct
-    , indirect = Defaults.indirect
+    { direct =
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        , Package "evancz" "elm-playground" (V.Version 1 0 3)
+        ]
+    , indirect = []
     , content = String.trim """
 module Main exposing (main)
 
