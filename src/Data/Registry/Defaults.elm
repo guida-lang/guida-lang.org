@@ -14,7 +14,7 @@ import Json.Decode as D
 
 direct : List Package.Package
 direct =
-    [ Package.Package "guida-lang" "stdlib" (V.Version 1 0 0)
+    [ Package.Package "guida-lang" "stdlib" (V.Version 1 0 1)
     ]
 
 

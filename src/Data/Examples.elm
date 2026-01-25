@@ -44,7 +44,7 @@ type alias Example =
 animation : Example
 animation =
     { direct =
-        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 1)
         , Package "evancz" "elm-playground" (V.Version 1 0 3)
         ]
     , indirect = []
@@ -1859,7 +1859,7 @@ hijack msg =
 keyboard : Example
 keyboard =
     { direct =
-        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 1)
         , Package "evancz" "elm-playground" (V.Version 1 0 3)
         ]
     , indirect = []
@@ -1896,7 +1896,7 @@ update computer ( x, y ) =
 mario : Example
 mario =
     { direct =
-        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 1)
         , Package "evancz" "elm-playground" (V.Version 1 0 3)
         ]
     , indirect = []
@@ -2010,7 +2010,7 @@ update computer mario =
 mouse : Example
 mouse =
     { direct =
-        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 1)
         , Package "evancz" "elm-playground" (V.Version 1 0 3)
         ]
     , indirect = []
@@ -2145,7 +2145,7 @@ view model =
 picture : Example
 picture =
     { direct =
-        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 1)
         , Package "evancz" "elm-playground" (V.Version 1 0 3)
         ]
     , indirect = []
@@ -3150,7 +3150,7 @@ fragmentShader =
 turtle : Example
 turtle =
     { direct =
-        [ Package "guida-lang" "stdlib" (V.Version 1 0 0)
+        [ Package "guida-lang" "stdlib" (V.Version 1 0 1)
         , Package "evancz" "elm-playground" (V.Version 1 0 3)
         ]
     , indirect = []
