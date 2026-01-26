@@ -2687,35 +2687,641 @@ This model allows Guida programs to scale in complexity while preserving reliabi
                     markdownRender """
 # State and Architecture
 
-<todo />
+Guida applications are structured around a clear and predictable architecture.
+State is treated as immutable data, and all changes to it are explicit and controlled.
+
+This approach scales from small programs to large applications while remaining easy to reason about.
+
+---
+
+## State as Data
+
+In Guida, **state is just data**.
+
+Application state is represented by immutable values, often grouped into records or custom types.
+
+```guida
+type alias Model =
+    { count : Int
+    , status : Status
+    }
+````
+
+There is no hidden or implicit state. Everything the application needs to know is stored in the model.
+
+---
+
+## Single Source of Truth
+
+Guida follows a **single source of truth** principle.
+
+* There is one authoritative model
+* All views are derived from it
+* All updates produce a new version of it
+
+This eliminates inconsistencies and makes behavior predictable.
+
+---
+
+## Updating State
+
+State updates are performed by pure functions.
+
+```guida
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Increment ->
+            ( { model | count = model.count + 1 }, Cmd.none )
+
+        Reset ->
+            ( { model | count = 0 }, Cmd.none )
+```
+
+Each update:
+
+* Takes the current state
+* Produces a new state
+* Optionally describes commands to run
+
+---
+
+## Messages as Events
+
+Changes in the application are driven by **messages**.
+
+Messages represent:
+
+* User interactions
+* Results of asynchronous work
+* Internal events
+
+```guida
+type Msg
+    = Increment
+    | Reset
+```
+
+This makes all possible state transitions explicit and discoverable.
+
+---
+
+## Unidirectional Data Flow
+
+Guida enforces **unidirectional data flow**:
+
+1. State produces a view
+2. The view triggers messages
+3. Messages update the state
+4. Commands can produce more messages
+
+This loop is simple, repeatable, and easy to debug.
+
+---
+
+## Separating Concerns
+
+The architecture encourages clear separation:
+
+* **Model**: what the state is
+* **Update**: how state changes
+* **View**: how state is presented
+* **Commands**: represent interactions with the outside world
+
+Each part has a single responsibility.
+
+---
+
+## Scaling the Architecture
+
+As applications grow:
+
+* The model can be composed from smaller models
+* Update logic can be split across modules
+* Messages can be namespaced and structured
+
+Because the rules are consistent, complexity grows linearly rather than exponentially.
+
+---
+
+## Guida vs Elm
+
+<info>
+Guida adopts the same architectural foundations as Elm.
+Guida-specific syntax and features integrate into this model without changing its core structure.
+</info>
 """
 
                 Route.ApplicationStructure ->
                     markdownRender """
 # Application Structure
 
-<todo />
+Guida applications follow a clear and predictable structure designed to support long-term maintenance, teamwork, and incremental growth.
+
+This section explains how a typical Guida application is organized on disk, how source files are structured, and how Elm and Guida code can coexist in the same project.
+
+---
+
+## Project Layout
+
+A minimal Guida application typically looks like this:
+
+```
+my-app/
+├── guida.json
+├── src/
+│   ├── Main.guida
+│   └── Other.elm
+````
+
+- `guida.json`
+  Marks the project as a Guida project and defines dependencies and source directories.
+
+- `src/`
+  Contains all source code for the application.
+
+---
+
+## Source Directories
+
+Source directories are defined in `guida.json`:
+
+```json
+{
+  "source-directories": [ "src" ]
+}
+````
+
+Only files located in these directories are compiled.
+
+---
+
+## File Types
+
+Guida projects may contain **two kinds of source files**:
+
+### `.guida` Files
+
+* Use Guida syntax
+* May use Guida-specific language features
+* Are compiled by the Guida compiler
+
+### `.elm` Files
+
+* Must contain valid Elm 0.19.1 syntax
+* Cannot use Guida-specific syntax
+* Are supported to allow gradual migration
+
+<info>
+In a Guida project, `.elm` files remain strictly Elm code.
+Guida syntax is only allowed in `.guida` files.
+</info>
+
+---
+
+## Entry Point
+
+Every application has an entry module, commonly named `Main`.
+
+Example:
+
+```guida
+module Main exposing (main)
+```
+
+The `main` value defines how the application starts and how it interacts with the runtime.
+
+---
+
+## Common Module Organization
+
+As applications grow, code is usually split into modules by responsibility:
+
+```
+src/
+├── Main.guida
+├── Pages/
+│   ├── Home.guida
+│   └── Settings.guida
+└── Components/
+    └── Button.guida
+```
+
+This structure:
+
+* Keeps responsibilities clear
+* Encourages reuse
+* Makes navigation easier for teams
+
+---
+
+## Naming Conventions
+
+* Module names match file paths
+* File names use `PascalCase`
+* Directory names are descriptive and grouped by feature or responsibility
+
+Consistent naming improves discoverability and onboarding.
 """
 
                 Route.TheGuidaArchitecture ->
                     markdownRender """
 # The Guida Architecture
 
-<todo />
+Guida applications follow a simple and disciplined architecture built around explicit state, clear data flow, and controlled effects.
+
+The architecture is not a framework you opt into—it is the natural consequence of Guida’s language design and runtime model.
+
+---
+
+## The Core Loop
+
+At the heart of every Guida application is a loop that continuously:
+
+1. Holds the current application state
+2. Renders a view from that state
+3. Reacts to events by producing messages
+4. Updates the state in response to those messages
+5. Executes effects and feeds results back into the system
+
+This loop is deterministic and repeatable.
+
+---
+
+## The Three Core Parts
+
+A Guida application is typically structured around three core concepts:
+
+### Model
+
+The **model** represents the entire state of the application at a given point in time.
+
+```guida
+type alias Model =
+    { count : Int
+    , loading : Bool
+    }
+````
+
+The model is:
+
+* Immutable
+* Explicit
+* The single source of truth
+
+---
+
+### Messages
+
+**Messages** represent all events that can affect the application.
+
+```guida
+type Msg
+    = Increment
+    | Decrement
+    | DataLoaded Data
+```
+
+Messages can come from:
+
+* User interactions
+* External effects
+* Internal application logic
+
+---
+
+### Update
+
+The **update** function describes how the model changes in response to messages.
+
+```guida
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Increment ->
+            ( { model | count = model.count + 1 }, Cmd.none )
+
+        Decrement ->
+            ( { model | count = model.count - 1 }, Cmd.none )
+
+        DataLoaded data ->
+            ( { model | loading = False }, Cmd.none )
+```
+
+Updates are:
+
+* Pure
+* Exhaustive
+* Easy to reason about
+
+---
+
+## Views Are Derived from State
+
+The **view** is a pure function of the model.
+
+```guida
+view : Model -> Html Msg
+view model =
+    text (String.fromInt model.count)
+```
+
+Because views contain no state of their own:
+
+* UI bugs are reduced
+* Rendering becomes predictable
+* Refactoring is safer
+
+---
+
+## Effects and Commands
+
+Side effects are not executed directly.
+
+Instead, the update function **describes** effects using commands.
+
+```guida
+fetchData : Cmd Msg
+```
+
+The runtime:
+
+* Executes commands
+* Converts results into messages
+* Feeds them back into `update`
+
+This keeps effects isolated and testable.
+
+---
+
+## Deterministic Behavior
+
+Even when multiple effects are running:
+
+* Messages are processed one at a time
+* State updates are sequential
+* Results are deterministic
+
+The same sequence of messages always produces the same result.
+
+---
+
+## Scaling the Architecture
+
+As applications grow:
+
+* Models are composed from smaller models
+* Messages are namespaced
+* Update logic is split across modules
+
+Despite this, the architecture remains consistent.
+
+---
+
+## Guida vs Elm
+
+<info>
+Guida follows the same architectural model as Elm.
+Guida-specific features integrate into this architecture without altering its core principles.
+</info>
 """
 
                 Route.RoutingAndNavigation ->
                     markdownRender """
 # Routing and Navigation
 
-<todo />
+Routing and navigation in Guida are handled in a **declarative and explicit** way.
+Rather than relying on implicit global state, navigation is modeled as part of the application state and driven by messages.
+
+This approach keeps routing predictable, testable, and fully integrated into the application architecture.
+
+---
+
+## URLs as Data
+
+In Guida, the current URL is treated as **data**, not control flow.
+
+The URL is:
+- Parsed into a structured value
+- Stored in the application model
+- Updated through messages
+
+```guida
+type alias Model =
+    { route : Route
+    }
+````
+
+---
+
+## Defining Routes
+
+Routes are typically modeled using a custom type:
+
+```guida
+type Route
+    = Home
+    | Profile UserId
+    | NotFound
+```
+
+This makes all valid routes explicit and prevents invalid states.
+
+---
+
+## Parsing the URL
+
+When the application starts or the URL changes, the runtime produces a message containing the new URL.
+
+That URL is then parsed into a `Route`:
+
+```guida
+parseRoute : Url -> Route
+parseRoute url =
+    case url.path of
+        "/" ->
+            Home
+
+        "/profile" ->
+            Profile defaultUserId
+
+        _ ->
+            NotFound
+```
+
+Because parsing is pure, it is easy to test and reason about.
+
+---
+
+## Updating State on Navigation
+
+Navigation events are handled in the `update` function like any other message:
+
+```guida
+type Msg
+    = UrlChanged Url
+    | LinkClicked UrlRequest
+```
+
+```guida
+update msg model =
+    case msg of
+        UrlChanged url ->
+            ( { model | route = parseRoute url }, none )
+
+        LinkClicked request ->
+            ( model, handleNavigation request )
+```
+
+This keeps routing logic centralized and explicit.
+
+---
+
+## Rendering Based on Route
+
+Views are derived from the current route:
+
+```guida
+view model =
+    case model.route of
+        Home ->
+            viewHome
+
+        Profile userId ->
+            viewProfile userId
+
+        NotFound ->
+            viewNotFound
+```
+
+Each route maps directly to a section of the UI.
+
+---
+
+## Navigation Links
+
+Links in the UI emit messages rather than performing navigation directly.
+
+This ensures:
+
+* Navigation is controlled by the update loop
+* Browser history stays in sync
+* Side effects remain explicit
+
+---
+
+## Deep Linking and Refresh Safety
+
+Because the application state is derived from the URL:
+
+* Pages can be bookmarked
+* Browser refreshes are safe
+* Direct navigation works as expected
+
+The URL is always the source of truth for navigation state.
+
+---
+
+## Guida vs Elm
+
+<info>
+Routing in Guida follows the same principles as Elm: URLs are parsed into data and handled through messages.
+Guida does not introduce hidden routing mechanisms or framework-level magic.
+</info>
 """
 
                 Route.Interoperability ->
                     markdownRender """
 # Interoperability
 
-<todo />
+Guida applications often need to interact with the outside world: JavaScript APIs, browser features, or existing libraries.
+
+Guida approaches interoperability in a **controlled and explicit** way, preserving the guarantees of immutability, purity, and predictable behavior.
+
+---
+
+## Interoperability as a First-Class Concern
+
+Interoperability in Guida is not an afterthought. It is designed to:
+
+- Integrate safely with JavaScript
+- Avoid hidden side effects
+- Keep boundaries between Guida and external code clear
+- Remain compatible with Elm-based mental models
+
+This ensures that interop does not undermine the reliability of Guida programs.
+
+---
+
+## Explicit Boundaries
+
+Guida enforces a clear separation between:
+
+- **Pure Guida code**, which is deterministic and testable
+- **External effects**, which interact with JavaScript and the environment
+
+This separation ensures:
+- External behavior is visible in program structure
+- Interop code is isolated
+- Failures and edge cases are easier to reason about
+
+---
+
+## Data Crossing the Boundary
+
+When data crosses between Guida and JavaScript:
+
+- It must be explicitly converted
+- Types must be accounted for
+- Invalid or unexpected data must be handled
+
+This avoids runtime surprises and encourages defensive integration.
+
+---
+
+## Runtime-Mediated Interaction
+
+Interactions with JavaScript are mediated by the Guida runtime rather than executed directly from application logic.
+
+This allows the runtime to:
+- Schedule work safely
+- Deliver results back as messages
+- Preserve deterministic state updates
+
+From the application's perspective, external interactions behave like any other effect.
+
+---
+
+## Browser and Platform APIs
+
+Common use cases for interoperability include:
+
+- Accessing browser APIs
+- Integrating with existing JS libraries
+- Embedding Guida into larger JS applications
+
+Guida supports these scenarios without exposing internal state or breaking purity.
+
+---
+
+## Progressive Enhancement
+
+Interop can be introduced incrementally:
+
+- Start with a pure Guida application
+- Add interoperability only where needed
+- Keep the majority of the codebase isolated from external complexity
+
+This makes Guida suitable for both small experiments and large, long-lived systems.
+
+---
+
+## Guida vs Elm
+
+<info>
+Guida follows Elm's philosophy of controlled interoperability.
+While Guida may expand what can cross the boundary over time, it preserves explicitness and safety as core principles.
+</info>
 """
 
                 Route.ContributingGettingStarted ->
