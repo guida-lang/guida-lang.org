@@ -3,6 +3,7 @@ module Page.Community exposing (view)
 import Browser
 import Html
 import Html.Attributes as Attr
+import Layout.Global as Global
 import Layout.Main as Layout
 import Session exposing (Session)
 
@@ -25,7 +26,7 @@ view session toSessionMsg =
                 [ Html.li []
                     [ Html.strong [] [ Html.text "Discord:" ]
                     , Html.text " Join us in the "
-                    , Html.a [ Attr.href "https://discord.gg/B6WgPzf5Aa" ] [ Html.text "Guida Discord" ]
+                    , Html.a [ Attr.href Global.discordLink ] [ Html.text "Guida Discord" ]
                     , Html.text " to connect with other contributors and users, ask questions, and share ideas."
                     ]
                 , Html.li []

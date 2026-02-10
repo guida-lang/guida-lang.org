@@ -10,6 +10,7 @@ import Html exposing (Html)
 import Html.Attributes as Attr
 import Html.Attributes.Aria as Aria
 import Icon
+import Layout.Global as Global
 import Layout.Main as Layout
 import Layout.Navigation exposing (Navigation)
 import Markdown.Block
@@ -158,7 +159,7 @@ view session toSessionMsg model =
                     whatIsGuidaView
 
                 Route.Installation ->
-                    markdownRender """
+                    markdownRender <| """
 # Installation
 
 Guida is distributed as an **npm package**, making it easy to install globally as a CLI tool or locally as a library in your JavaScript or Node.js projects.
@@ -253,7 +254,7 @@ If `guida` isn't found after installation:
 * Try reinstalling with elevated permissions if necessary.
 * On Windows, restart your terminal after installation.
 
-For more help, join the [Guida Discord server](https://discord.gg/Ur33engz).
+For more help, join the [Guida Discord server](""" ++ Global.discordLink ++ """).
 """
 
                 Route.YourFirstProgram ->
@@ -3373,7 +3374,7 @@ While Guida may expand what can cross the boundary over time, it preserves expli
 
 introductionView : List (Html msg)
 introductionView =
-    markdownRender """
+    markdownRender <| """
 # Introduction
 
 Welcome to the **Guida Documentation** — your complete guide to understanding, using,
@@ -3455,13 +3456,13 @@ As the language, compiler, and ecosystem grow, this documentation will evolve to
 notes marking version changes and upcoming features.
 
 You can follow ongoing discussions and announcements on
-the [Guida Discord server](https://discord.gg/Ur33engz).
-  """
+the [Guida Discord server](""" ++ Global.discordLink ++ """).
+"""
 
 
 whatIsGuidaView : List (Html msg)
 whatIsGuidaView =
-    markdownRender
+    markdownRender <|
         """
 # What is Guida?
 
@@ -3470,7 +3471,9 @@ whatIsGuidaView =
 Guida's main goal is to provide a language and toolchain that feel familiar to Elm developers while enabling broader adoption in professional and team environments.  
 It aims to give companies confidence to use and invest in a language that is reliable, maintainable, and evolving in an open way.
 
-Join the [Guida Discord server](https://discord.gg/Ur33engz) to connect with the community, ask questions, and share ideas.
+Join the [Guida Discord server]("""
+            ++ Global.discordLink
+            ++ """) to connect with the community, ask questions, and share ideas.
 
 ## Vision
 
@@ -4874,7 +4877,7 @@ should not be too tough to do something similar on Windows.
 """
 
         Route.PortModules ->
-            markdownRender """
+            markdownRender <| """
 # Port Modules
 
 The package ecosystem is one of the most important parts of Guida. Right now, our ecosystem
@@ -4925,7 +4928,7 @@ We will be expanding our core libraries over time, as explained [here](https://g
 and we hope you will circle back later to see if Guida has grown into a better fit!
 
 If you have more questions about this choice or what it means for your application,
-please come ask in the [Guida Discord](https://discord.gg/B6WgPzf5Aa). Folks are friendly
+please come ask in the [Guida Discord](""" ++ Global.discordLink ++ """). Folks are friendly
 and happy to help out! Chances are that a `port` in your application will work great for
 your case once you learn more about how they are meant to be used.
 
